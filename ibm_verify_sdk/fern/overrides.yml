@@ -1,0 +1,16 @@
+# paths:
+#   "/v2.0/Users/cardinality":
+#     get:
+#       x-fern-sdk-group-name: ["user_management"]
+#       x-fern-sdk-method-name: get_user_cardinality
+      
+#   "/v2.0/Users/{id}":
+#     get:
+#       x-fern-sdk-group-name: ["user_management"]
+#       x-fern-sdk-method-name: get_user
+#     put:
+#       x-fern-sdk-group-name: ["user_management"]
+#       x-fern-sdk-method-name: put_user
+#     delete:
+#       x-fern-sdk-group-name: ["user_management"]
+#       x-fern-sdk-method-name: delete_user

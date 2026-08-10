@@ -1,0 +1,62 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+  id-token: write   # required for PyPI trusted publishing (OIDC)
+
+jobs:
+  # Re-run the full CI suite against the tagged commit before publishing.
+  # Publishing is skipped if lint, test, or build fails.
+  ci:
+    name: CI gate
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: ci
+    environment:
+      name: pypi
+      url: https://pypi.org/project/ibm-verify-sdk/
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build
+        run: pip install build
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Verify tag matches package version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"          # strip leading 'v'  →  1.2.3
+          PKG=$(python -c "
+          import tomllib
+          with open('pyproject.toml', 'rb') as f:
+              print(tomllib.load(f)['project']['version'])
+          ")
+          echo "Tag version : $TAG"
+          echo "pyproject   : $PKG"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag $TAG does not match pyproject.toml version $PKG"
+            exit 1
+          fi
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # Uses OIDC trusted publishing — no API token needed.
+        # Configure the trusted publisher once in PyPI project settings:
+        #   Publisher : GitHub Actions
+        #   Owner     : <your-org>
+        #   Repository: verify-python-sdk
+        #   Workflow  : publish.yml
