@@ -1,0 +1,61 @@
+overlay: 1.0.0
+info:
+  title: OpenAPI Validation Fixes
+  version: 0.1.0
+  description: Fix validation issues in Openapi spec
+actions:
+
+# App Access OpenAPI fixes -----------------------------------------------------------------------------------
+  #Endpoint - GET /v1.0/applications
+  # Fix applicationState - should be boolean, not string
+  - target: $.components.schemas.AdminApplicationWithoutProv.properties.applicationState
+    update:
+      type: boolean
+      description: "Boolean flag to indicate whether end user can use SSO with the application"
+
+  # Fix visibleOnLaunchpad - should be boolean, not string
+  - target: $.components.schemas.AdminApplicationWithoutProv.properties.visibleOnLaunchpad
+    update:
+      type: boolean
+      description: "Boolean flag representing whether application is visible for end user to request access"
+
+  # Fix approvalRequired - should be boolean, not string
+  - target: $.components.schemas.AdminApplicationWithoutProv.properties.approvalRequired
+    update:
+      type: boolean
+      description: "Boolean flag representing whether approval request will be sent when end user request access"
+
+
+  # Endpoint GET /v1.0/applications/{applicationId} 
+  # --- 1. Fix 'xforce' object parsing ---
+  # Assuming ApplicationDetailsResponseBean from your first error log
+  - target: "$.components.schemas.ApplicationDetailsResponseBean.properties.xforce"
+    description: "Allow xforce to accept primitive strings instead of strict objects."
+    update:
+      type: object
+      additionalProperties: true
+
+  # --- 2. Fix 'additionalConfig' parsing ---
+  # Targets OIDCPropertiesBean exactly
+  - target: "$.components.schemas.OIDCPropertiesBean.properties.additionalConfig"
+    description: "Allow additionalConfig to accept arbitrary types (strings, bools, lists)."
+    update:
+      type: object
+      additionalProperties: true
+
+  # --- 3. Fix missing required SAML properties ---
+  # Removes the required constraints for assertionConsumerServiceUrl and providerId
+  - target: "$.components.schemas.SAMLPropertiesBean.required"
+    description: "Make assertionConsumerServiceUrl and providerId optional."
+    remove: true
+
+  # Removes the required constraints for assertionConsumerService and properties
+  - target: "$.components.schemas.SAMLBean.required"
+    description: "Make assertionConsumerService optional."
+    remove: true
+
+  # --- 4. Fix missing required SSO properties ---
+  # Removes the required constraint for domainName
+  - target: "$.components.schemas.SSOBean.required"
+    description: "Make domainName optional."
+    remove: true
