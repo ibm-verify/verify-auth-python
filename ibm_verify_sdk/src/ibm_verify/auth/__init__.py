@@ -1,0 +1,14 @@
+# Copyright IBM Corp. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+"""
+IBM Verify auth package.
+
+Public API::
+
+    from ibm_verify.auth.client import OAuthClient
+"""
+
+from ibm_verify.auth.client import OAuthClient
+
+__all__ = ["OAuthClient"]
