@@ -22,7 +22,7 @@ jobs:
     needs: ci
     environment:
       name: pypi
-      url: https://pypi.org/project/ibm-verify-sdk/
+      url: https://pypi.org/project/verify-auth-python/
 
     steps:
       - uses: actions/checkout@v4
@@ -58,5 +58,5 @@ jobs:
         # Configure the trusted publisher once in PyPI project settings:
         #   Publisher : GitHub Actions
         #   Owner     : <your-org>
-        #   Repository: verify-python-sdk
+        #   Repository: verify-auth-python
         #   Workflow  : publish.yml

@@ -18,7 +18,7 @@ Environment variables (sample-scripts/.env)
 
 Usage
 -----
-    cd verify-python-sdk
+    cd verify-auth-python
     python sample-scripts/introspect_token.py
 """
 

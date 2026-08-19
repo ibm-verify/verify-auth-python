@@ -25,7 +25,7 @@ by the IBM Verify tenant.  Behaviour differs by deployment type:
 
 Usage
 -----
-    cd verify-python-sdk/ibm_verify_sdk
+    cd verify-auth-python/ibm_verify_sdk
     .venv/bin/python ../sample-scripts/test_authorization_details.py
 
 Environment variables (from sample-scripts/.env)

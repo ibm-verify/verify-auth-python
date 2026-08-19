@@ -41,4 +41,4 @@ the token or authorization request body.
 
 ---
 
-[0.1.0]: https://github.com/ibm-verify/verify-sdk-python/releases/tag/v0.1.0
+[0.1.0]: https://github.com/ibm-verify/verify-auth-python/releases/tag/v0.1.0

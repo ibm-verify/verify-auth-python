@@ -47,7 +47,7 @@ Common errors
 
 Usage
 -----
-    cd verify-python-sdk
+    cd verify-auth-python
     python sample-scripts/dcr_flow.py
 """
 

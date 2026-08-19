@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ibm-verify-sdk"
+name = "verify-auth-python"
 version = "0.1.0"
 description = "IBM Verify Python SDK - Official Python SDK for IBM Verify SaaS"
 readme = "README.md"
@@ -47,10 +47,10 @@ samples = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ibm-verify/verify-sdk-python"
-Documentation = "https://ibm-verify.github.io/verify-sdk-python"
-Repository = "https://github.com/ibm-verify/verify-sdk-python"
-Issues = "https://github.com/ibm-verify/verify-sdk-python/issues"
+Homepage = "https://github.com/ibm-verify/verify-auth-python"
+Documentation = "https://ibm-verify.github.io/verify-auth-python"
+Repository = "https://github.com/ibm-verify/verify-auth-python"
+Issues = "https://github.com/ibm-verify/verify-auth-python/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["ibm_verify_sdk/src/ibm_verify"]

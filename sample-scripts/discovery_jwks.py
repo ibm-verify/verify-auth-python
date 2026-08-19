@@ -24,7 +24,7 @@ Environment variables (.env)
 
 Usage
 -----
-    cd verify-python-sdk
+    cd verify-auth-python
     python sample-scripts/test_discovery_jwks.py
 """
 

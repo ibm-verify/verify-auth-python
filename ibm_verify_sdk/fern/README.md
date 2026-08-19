@@ -1,7 +1,7 @@
 ## Regenerating the SDK
 
 ```sh
-# From verify-python-sdk/
+# From verify-auth-python/
 fern generate --group python-sdk --log-level debug --local
 ```
 

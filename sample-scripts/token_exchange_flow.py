@@ -69,7 +69,7 @@ Common errors
 
 Usage
 -----
-    cd verify-python-sdk
+    cd verify-auth-python
     python sample-scripts/token_exchange_flow.py
 """
 

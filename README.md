@@ -1,9 +1,9 @@
 # IBM Verify Python SDK
 
-[![PyPI version](https://img.shields.io/badge/pypi-v0.1.0-blue.svg)](https://pypi.org/project/ibm-verify-sdk/)
+[![PyPI version](https://img.shields.io/badge/pypi-v0.1.0-blue.svg)](https://pypi.org/project/verify-auth-python/)
 [![Build Status](https://img.shields.io/badge/build-lint%20warnings-yellow.svg)](#)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://pypi.org/project/ibm-verify-sdk/)
+[![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://pypi.org/project/verify-auth-python/)
 
 A Python SDK for IBM Verify SaaS, focused on OAuth 2.0 and OIDC - token acquisition, discovery, introspection, and dynamic client registration.
 
@@ -51,11 +51,11 @@ IBM Verify solves hybrid challenges with secure, frictionless IAM that simplifie
 ## Installation
 
 ```bash
-pip install ibm-verify-sdk
+pip install verify-auth-python
 ```
 
 ```bash
-uv add ibm-verify-sdk
+uv add verify-auth-python
 ```
 
 For local development using the repository source code directly (without installing from PyPI), see [Development](#development).
@@ -645,7 +645,7 @@ except VerifyError as e:
 ## Project Structure
 
 ```
-verify-python-sdk/
+verify-auth-python/
 ├── ibm_verify_sdk/
 │   ├── src/ibm_verify/
 │   │   ├── auth/client.py             # OAuthClient
@@ -680,8 +680,8 @@ verify-python-sdk/
 ## Development
 
 ```bash
-git clone https://github.com/<org>/verify-sdk-python.git
-cd verify-python-sdk
+git clone https://github.com/<org>/verify-auth-python.git
+cd verify-auth-python
 
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e ".[dev,samples]"

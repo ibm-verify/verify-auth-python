@@ -15,12 +15,12 @@ This directory contains the unit tests for the OAuth 2.0 / OIDC layer of the SDK
 
 ## Quick start
 
-All commands must be run from the **`verify-python-sdk/`** directory (one level up from here),
+All commands must be run from the **`verify-auth-python/`** directory (one level up from here),
 not from inside `ibm_verify_sdk/test/`.
 
 ```bash
 # make sure you are in the right place
-cd /path/to/verify-python-sdk
+cd /path/to/verify-auth-python
 ```
 
 ### Run all unit tests
@@ -97,11 +97,11 @@ python test_oauth_unit.py
 python ibm_verify_sdk/test/test_oauth_unit.py
 ```
 
-### ✅ Always use `.venv/bin/pytest` from `verify-python-sdk/`
+### ✅ Always use `.venv/bin/pytest` from `verify-auth-python/`
 
 ```bash
 # CORRECT
-cd verify-python-sdk
+cd verify-auth-python
 .venv/bin/pytest ibm_verify_sdk/test/test_oauth_unit.py -v --no-cov
 ```
 
@@ -139,7 +139,7 @@ export VERIFY_API_TOKEN=your-bearer-token
 If `pytest` or `respx` is missing, install the dev extras:
 
 ```bash
-# from verify-python-sdk/
+# from verify-auth-python/
 pip install -e ".[dev]"
 # or
 uv pip install -e ".[dev]"

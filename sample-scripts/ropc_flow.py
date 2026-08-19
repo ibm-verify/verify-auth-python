@@ -59,7 +59,7 @@ Environment variables (.env)
 
 Usage
 -----
-    cd verify-python-sdk
+    cd verify-auth-python
     python sample-scripts/ropc_flow.py
 """
 
