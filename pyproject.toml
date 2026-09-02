@@ -53,7 +53,7 @@ Repository = "https://github.com/ibm-verify/verify-auth-python"
 Issues = "https://github.com/ibm-verify/verify-auth-python/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["ibm_verify_sdk/src/ibm_verify"]
+packages = ["oauth2"]
 
 [tool.black]
 line-length = 100
@@ -100,7 +100,7 @@ module = "tests.*"
 disallow_untyped_defs = false
 
 [tool.pytest.ini_options]
-testpaths = ["ibm_verify_sdk/test", "ibm_verify_sdk/src/ibm_verify/tests"]
+testpaths = ["test"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
@@ -110,14 +110,15 @@ markers = [
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=ibm_verify",
+    "--ignore=test/test_sdk.py",
+    "--cov=oauth2",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
 ]
 
 [tool.coverage.run]
-source = ["ibm_verify"]
+source = ["oauth2"]
 omit = ["*/tests/*", "*/test_*.py"]
 
 [tool.coverage.report]

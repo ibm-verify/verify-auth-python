@@ -25,7 +25,7 @@ by the IBM Verify tenant.  Behaviour differs by deployment type:
 
 Usage
 -----
-    cd verify-auth-python/ibm_verify_sdk
+    cd verify-auth-python/oauth2
     .venv/bin/python ../sample-scripts/test_authorization_details.py
 
 Environment variables (from sample-scripts/.env)
@@ -46,7 +46,7 @@ from dotenv import load_dotenv
 # Load from sample-scripts/.env (when run from project root: python sample-scripts/...)
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
-from ibm_verify.auth.client import OAuthClient  # noqa: E402  # pylint: disable=wrong-import-position
+from oauth2.auth.client import OAuthClient  # noqa: E402  # pylint: disable=wrong-import-position
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 TENANT_URL    = os.getenv("IBM_VERIFY_TENANT_URL", "").rstrip("/")

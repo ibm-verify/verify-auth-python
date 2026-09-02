@@ -31,7 +31,6 @@ import json
 import time
 import base64
 import webbrowser
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
@@ -39,10 +38,7 @@ from urllib.parse import parse_qs, urlparse
 
 from dotenv import load_dotenv
 
-# ── SDK path (works whether or not the editable install is active) ────────────
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "ibm_verify_sdk" / "src"))
-
-from ibm_verify.oauth import (
+from oauth2.grant_types import (
     AuthorizationCodeMixin,
     ClientCredentialsMixin,
     DeviceCodeMixin,

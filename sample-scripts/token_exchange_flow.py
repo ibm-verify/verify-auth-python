@@ -80,8 +80,8 @@ import base64
 
 from dotenv import load_dotenv
 
-from ibm_verify.auth.client import OAuthClient
-from ibm_verify.core.errors import VerifyError
+from oauth2.auth.client import OAuthClient
+from oauth2.core.errors import VerifyError
 
 # ── Load .env ─────────────────────────────────────────────────────────────────
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
