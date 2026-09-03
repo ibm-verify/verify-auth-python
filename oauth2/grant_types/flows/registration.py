@@ -1,3 +1,5 @@
+# Copyright IBM Corp. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
 """
 IBM Verify OAuth — Dynamic Client Registration (RFC 7591 / RFC 7592).
 

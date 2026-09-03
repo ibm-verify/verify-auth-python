@@ -1,3 +1,5 @@
+# Copyright IBM Corp. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
 """
 IBM Verify OAuth — Client Credentials Grant (RFC 6749 §4.4).
 """
