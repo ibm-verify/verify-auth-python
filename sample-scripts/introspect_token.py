@@ -29,8 +29,8 @@ from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
-from ibm_verify.auth.client import OAuthClient
-from ibm_verify.core.errors import VerifyError
+from oauth2.auth.client import OAuthClient
+from oauth2.core.errors import VerifyError
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 TENANT_URL    = os.getenv("IBM_VERIFY_TENANT_URL", "").rstrip("/")

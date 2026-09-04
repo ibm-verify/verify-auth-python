@@ -13,7 +13,7 @@ Initial release of the IBM Verify Python SDK.
 
 ### Added
 
-#### OAuth 2.0 / OIDC (`ibm_verify.auth`, `ibm_verify.oauth`)
+#### OAuth 2.0 / OIDC (`oauth2.auth`, `oauth2.oauth`)
 
 | Grant / feature | Class / method |
 |---|---|
