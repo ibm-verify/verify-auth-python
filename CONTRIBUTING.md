@@ -6,9 +6,9 @@ Review the following guidelines for submitting questions, issues, or changes to 
 
 In general, coding guidelines are specific to the language used.
 
-### Golang
+### Python
 
-Please run `golangci-lint run` and fix any issues found.
+Please run `ruff check oauth2/` and `ruff format --check oauth2/` and fix any issues found.
 
 ## Issues and Questions
 

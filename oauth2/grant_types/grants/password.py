@@ -7,11 +7,11 @@ Resource Owner Password Credentials grant.
 """
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import httpx
-from authlib.integrations.httpx_client import OAuth2Client
 from authlib.common.errors import AuthlibBaseError
+from authlib.integrations.httpx_client import OAuth2Client
 
 from oauth2.core.errors.errors import VerifyError
 
@@ -32,8 +32,8 @@ class PasswordGrantMixin:
         scope: Optional[str] = None,
         token_endpoint: Optional[str] = None,
         authorization_details: Optional[Any] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        extra_params: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
         """Exchange username/password for tokens (RFC 6749 §4.3).
 
         Args:
@@ -60,13 +60,13 @@ class PasswordGrantMixin:
             timeout=self.timeout,  # type: ignore[attr-defined]
             verify=self.verify_ssl,  # type: ignore[attr-defined]
         )
-        fetch_kwargs: Dict[str, Any] = dict(
-            url=endpoint,
-            grant_type="password",
-            username=username,
-            password=password,
-            headers={"Authorization": authorization_header},
-        )
+        fetch_kwargs: dict[str, Any] = {
+            "url": endpoint,
+            "grant_type": "password",
+            "username": username,
+            "password": password,
+            "headers": {"Authorization": authorization_header},
+        }
         if scope:
             fetch_kwargs["scope"] = scope
         if authorization_details is not None:

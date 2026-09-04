@@ -5,14 +5,13 @@ IBM Verify OAuth — Refresh Token Grant (RFC 6749 §6).
 """
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import httpx
-from authlib.integrations.httpx_client import OAuth2Client
 from authlib.common.errors import AuthlibBaseError
+from authlib.integrations.httpx_client import OAuth2Client
 
 from oauth2.core.errors.errors import VerifyError
-
 from oauth2.grant_types.constants import CLIENT_ASSERTION_TYPE_JWT
 
 
@@ -33,8 +32,8 @@ class RefreshTokenMixin:
         scope: Optional[str] = None,
         token_endpoint: Optional[str] = None,
         authorization_details: Optional[Any] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        extra_params: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
         """Obtain a new access token from a refresh token (RFC 6749 §6).
 
         Supports ``client_secret_post``, ``private_key_jwt``, and public clients.
@@ -58,7 +57,7 @@ class RefreshTokenMixin:
         endpoint = self._resolve_token_endpoint(token_endpoint)  # type: ignore[attr-defined]
         cert_param = self._get_cert_param()  # type: ignore[attr-defined]
 
-        token_params: Dict[str, Any] = {
+        token_params: dict[str, Any] = {
             "grant_type": "refresh_token",
             "refresh_token": refresh_token,
         }

@@ -6,7 +6,7 @@ IBM Verify OAuth — Device Authorization Grant (RFC 8628).
 
 import json
 import time
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Optional
 
 import httpx
 
@@ -26,8 +26,8 @@ class DeviceCodeMixin:
         client_secret: Optional[str] = None,
         device_auth_endpoint: Optional[str] = None,
         authorization_details: Optional[Any] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        extra_params: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
         """Start the Device Authorization flow — Step 1 (RFC 8628).
 
         Args:
@@ -45,8 +45,8 @@ class DeviceCodeMixin:
         """
         endpoint = self._resolve_device_auth_endpoint(device_auth_endpoint)  # type: ignore[attr-defined]
 
-        data: Dict[str, Any] = {"scope": scope, "client_id": client_id}
-        headers: Dict[str, str] = {"Content-Type": "application/x-www-form-urlencoded"}
+        data: dict[str, Any] = {"scope": scope, "client_id": client_id}
+        headers: dict[str, str] = {"Content-Type": "application/x-www-form-urlencoded"}
         if client_secret:
             # IBM Verify uses client_secret_post: both client_id and client_secret go in
             # the request body.  Basic auth is rejected with CSIAQ0330E.
@@ -97,8 +97,8 @@ class DeviceCodeMixin:
         expires_in: int = 300,
         client_secret: Optional[str] = None,
         token_endpoint: Optional[str] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        extra_params: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
         """Poll for a token until the user approves — Step 2 of Device flow (RFC 8628).
 
         Blocks until approved, expired, or denied.
@@ -123,12 +123,12 @@ class DeviceCodeMixin:
         deadline = time.time() + expires_in
         poll_interval = interval
 
-        data: Dict[str, Any] = {
+        data: dict[str, Any] = {
             "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
             "device_code": device_code,
             "client_id": client_id,
         }
-        headers: Dict[str, str] = {"Content-Type": "application/x-www-form-urlencoded"}
+        headers: dict[str, str] = {"Content-Type": "application/x-www-form-urlencoded"}
         if client_secret:
             # IBM Verify uses client_secret_post: client_secret goes in the request body.
             # Basic auth is rejected with CSIAQ0330E.
@@ -189,10 +189,10 @@ class DeviceCodeMixin:
         client_secret: Optional[str] = None,
         device_auth_endpoint: Optional[str] = None,
         token_endpoint: Optional[str] = None,
-        on_user_code: Optional[Callable[[Dict[str, Any]], None]] = None,
+        on_user_code: Optional[Callable[[dict[str, Any]], None]] = None,
         authorization_details: Optional[Any] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        extra_params: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
         """Run the complete Device Authorization flow (RFC 8628).
 
         Convenience wrapper around :meth:`request_device_code` +

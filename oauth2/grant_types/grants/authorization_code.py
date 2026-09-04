@@ -5,14 +5,13 @@ IBM Verify OAuth — Authorization Code + PKCE Grant (RFC 7636).
 """
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import httpx
-from authlib.integrations.httpx_client import OAuth2Client
 from authlib.common.errors import AuthlibBaseError
+from authlib.integrations.httpx_client import OAuth2Client
 
 from oauth2.core.errors.errors import VerifyError
-
 from oauth2.grant_types.constants import CLIENT_ASSERTION_TYPE_JWT
 from oauth2.grant_types.utils import build_authorization_url, generate_pkce_pair
 
@@ -43,7 +42,7 @@ class AuthorizationCodeMixin:
         nonce: Optional[str] = None,
         authorize_endpoint: Optional[str] = None,
         authorization_details: Optional[Any] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
+        extra_params: Optional[dict[str, Any]] = None,
     ) -> str:
         """Build the Authorization Code + PKCE redirect URL (RFC 7636).
 
@@ -86,8 +85,8 @@ class AuthorizationCodeMixin:
         client_assertion_type: Optional[str] = None,
         token_endpoint: Optional[str] = None,
         authorization_details: Optional[Any] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        extra_params: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
         """Exchange an authorization code for tokens — Step 2 of PKCE flow (RFC 7636).
 
         Supports ``client_secret_post``, ``private_key_jwt``, and public clients.
@@ -111,7 +110,7 @@ class AuthorizationCodeMixin:
         endpoint = self._resolve_token_endpoint(token_endpoint)  # type: ignore[attr-defined]
         cert_param = self._get_cert_param()  # type: ignore[attr-defined]
 
-        extra: Dict[str, Any] = {}
+        extra: dict[str, Any] = {}
         if authorization_details is not None:
             extra["authorization_details"] = (
                 json.dumps(authorization_details)
@@ -138,9 +137,7 @@ class AuthorizationCodeMixin:
                     redirect_uri=redirect_uri,
                     code_verifier=code_verifier,
                     client_assertion=client_assertion,
-                    client_assertion_type=(
-                        client_assertion_type or CLIENT_ASSERTION_TYPE_JWT
-                    ),
+                    client_assertion_type=(client_assertion_type or CLIENT_ASSERTION_TYPE_JWT),
                     **extra,
                 )
             elif client_secret:

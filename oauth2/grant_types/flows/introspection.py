@@ -4,11 +4,11 @@
 IBM Verify OAuth — Token Introspection (RFC 7662).
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import httpx
-from authlib.integrations.httpx_client import OAuth2Client
 from authlib.common.errors import AuthlibBaseError
+from authlib.integrations.httpx_client import OAuth2Client
 
 from oauth2.core.errors.errors import VerifyError
 
@@ -30,7 +30,7 @@ class IntrospectMixin:
         token_type_hint: Optional[str] = None,
         authorization_header: Optional[str] = None,
         introspect_endpoint: Optional[str] = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Introspect an OAuth 2.0 / OIDC token (RFC 7662).
 
         Args:
@@ -68,13 +68,13 @@ class IntrospectMixin:
             token_endpoint_auth_method=auth_method,
         )
 
-        data: Dict[str, Any] = {}
+        data: dict[str, Any] = {}
         if client_assertion:
             data["client_assertion"] = client_assertion
         if client_assertion_type:
             data["client_assertion_type"] = client_assertion_type
 
-        headers: Dict[str, str] = {}
+        headers: dict[str, str] = {}
         if authorization_header:
             headers["Authorization"] = authorization_header
 
