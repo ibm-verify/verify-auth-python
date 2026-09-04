@@ -34,9 +34,9 @@ TOKEN_TYPE_JWT = "urn:ietf:params:oauth:token-type:jwt"
 
 # ── PKCE ──────────────────────────────────────────────────────────────────────
 PKCE_CHALLENGE_METHOD = "S256"
-PKCE_VERIFIER_BYTE_LENGTH = 96   # 96 bytes → 128-char URL-safe base64 string
+PKCE_VERIFIER_BYTE_LENGTH = 96  # 96 bytes → 128-char URL-safe base64 string
 
 # ── JWT defaults ──────────────────────────────────────────────────────────────
 JWT_DEFAULT_ALGORITHM = "RS256"
-JWT_CLIENT_ASSERTION_EXPIRES_IN = 300   # 5 minutes
-JWT_BEARER_ASSERTION_EXPIRES_IN = 300   # 5 minutes
+JWT_CLIENT_ASSERTION_EXPIRES_IN = 300  # 5 minutes
+JWT_BEARER_ASSERTION_EXPIRES_IN = 300  # 5 minutes

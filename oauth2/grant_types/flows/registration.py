@@ -18,7 +18,7 @@ The client configuration endpoint (read/update/delete) is always the
 explicit ``registration_endpoint`` override supplied by the caller.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import httpx
 
@@ -51,10 +51,10 @@ class DcrMixin:
 
     def register_client(
         self,
-        client_metadata: Dict[str, Any],
+        client_metadata: dict[str, Any],
         initial_access_token: Optional[str] = None,
         registration_endpoint: Optional[str] = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Dynamically register a new OAuth client (RFC 7591).
 
         Args:
@@ -77,7 +77,7 @@ class DcrMixin:
         """
         endpoint = self._resolve_registration_endpoint(registration_endpoint)
 
-        headers: Dict[str, str] = {"Content-Type": "application/json"}
+        headers: dict[str, str] = {"Content-Type": "application/json"}
         if initial_access_token:
             headers["Authorization"] = f"Bearer {initial_access_token}"
 
@@ -105,7 +105,7 @@ class DcrMixin:
         self,
         registration_access_token: str,
         registration_client_uri: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Retrieve a registered client's metadata (RFC 7592 §4.1).
 
         Args:
@@ -144,8 +144,8 @@ class DcrMixin:
         self,
         registration_access_token: str,
         registration_client_uri: str,
-        client_metadata: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        client_metadata: dict[str, Any],
+    ) -> dict[str, Any]:
         """Update a registered client's metadata (RFC 7592 §4.2).
 
         The full metadata document must be supplied (PUT semantics — not PATCH).

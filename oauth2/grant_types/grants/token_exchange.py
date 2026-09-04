@@ -5,14 +5,13 @@ IBM Verify OAuth — Token Exchange Grant (RFC 8693).
 """
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import httpx
-from authlib.integrations.httpx_client import OAuth2Client
 from authlib.common.errors import AuthlibBaseError
+from authlib.integrations.httpx_client import OAuth2Client
 
 from oauth2.core.errors.errors import VerifyError
-
 from oauth2.grant_types.constants import (
     GRANT_TOKEN_EXCHANGE,
     TOKEN_TYPE_ACCESS_TOKEN,
@@ -35,8 +34,8 @@ class TokenExchangeMixin:
         subject_token_type: str = TOKEN_TYPE_ACCESS_TOKEN,
         actor_token_type: str = TOKEN_TYPE_ACCESS_TOKEN,
         authorization_details: Optional[Any] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        extra_params: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
         """Exchange one set of tokens for another (RFC 8693).
 
         Args:
@@ -56,7 +55,7 @@ class TokenExchangeMixin:
         """
         endpoint = self._resolve_token_endpoint(token_endpoint)  # type: ignore[attr-defined]
 
-        extra: Dict[str, Any] = {}
+        extra: dict[str, Any] = {}
         if authorization_details is not None:
             extra["authorization_details"] = (
                 json.dumps(authorization_details)

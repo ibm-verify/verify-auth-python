@@ -5,14 +5,13 @@ IBM Verify OAuth — JWT Bearer Grant (RFC 7523).
 """
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import httpx
-from authlib.integrations.httpx_client import OAuth2Client
 from authlib.common.errors import AuthlibBaseError
+from authlib.integrations.httpx_client import OAuth2Client
 
 from oauth2.core.errors.errors import VerifyError
-
 from oauth2.grant_types.constants import CLIENT_ASSERTION_TYPE_JWT, GRANT_JWT_BEARER
 from oauth2.grant_types.utils import (
     generate_client_assertion_jwt,
@@ -42,8 +41,8 @@ class JWTBearerMixin:
         client_assertion: Optional[str] = None,
         client_assertion_type: str = CLIENT_ASSERTION_TYPE_JWT,
         authorization_details: Optional[Any] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        extra_params: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
         """Exchange a JWT assertion for an access token (RFC 7523 jwt-bearer grant).
 
         Supports multiple client authentication methods:
@@ -71,7 +70,7 @@ class JWTBearerMixin:
         endpoint = self._resolve_token_endpoint(token_endpoint)  # type: ignore[attr-defined]
         cert_param = self._get_cert_param()  # type: ignore[attr-defined]
 
-        body: Dict[str, Any] = {
+        body: dict[str, Any] = {
             "grant_type": GRANT_JWT_BEARER,
             "assertion": assertion,
         }

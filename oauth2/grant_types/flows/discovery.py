@@ -6,7 +6,7 @@ IBM Verify OAuth — OIDC Discovery and JWKS.
 Provides ``DiscoveryMixin`` which is composed into ``OAuthClient``.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import httpx
 from authlib.oidc.discovery import OpenIDProviderMetadata, get_well_known_url
@@ -29,7 +29,7 @@ class DiscoveryMixin:
         """Fetch and cache the OIDC discovery document.
 
         Args:
-            op_name: OIDC provider name (default: ``"default"``). 
+            op_name: OIDC provider name (default: ``"default"``).
             discovery_url: Explicit discovery URL override.
 
         Returns:
@@ -38,7 +38,7 @@ class DiscoveryMixin:
         if discovery_url:
             url = discovery_url
         else:
-            issuer = f"{self.base_url}/oauth2" 
+            issuer = f"{self.base_url}/oauth2"
             url = get_well_known_url(issuer, external=True)
 
         try:
@@ -77,7 +77,7 @@ class DiscoveryMixin:
         self,
         op_name: str = "default",
         jwks_uri: Optional[str] = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Fetch the JSON Web Key Set (JWKS).
 
         Args:

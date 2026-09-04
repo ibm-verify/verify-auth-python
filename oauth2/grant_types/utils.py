@@ -14,10 +14,9 @@ import hashlib
 import secrets
 import time
 import uuid
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional
 
 from oauth2.grant_types.constants import (
-    CLIENT_ASSERTION_TYPE_JWT,
     JWT_BEARER_ASSERTION_EXPIRES_IN,
     JWT_CLIENT_ASSERTION_EXPIRES_IN,
     JWT_DEFAULT_ALGORITHM,
@@ -26,7 +25,7 @@ from oauth2.grant_types.constants import (
 )
 
 
-def generate_pkce_pair() -> Tuple[str, str]:
+def generate_pkce_pair() -> tuple[str, str]:
     """Generate a PKCE ``(code_verifier, code_challenge)`` pair using S256.
 
     Returns:
@@ -57,7 +56,7 @@ def build_authorization_url(
     state: Optional[str] = None,
     nonce: Optional[str] = None,
     authorization_details: Optional[Any] = None,
-    extra_params: Optional[Dict[str, Any]] = None,
+    extra_params: Optional[dict[str, Any]] = None,
 ) -> str:
     """Build an Authorization Code + PKCE redirect URL (RFC 7636).
 
@@ -82,7 +81,7 @@ def build_authorization_url(
     if state is None:
         state = secrets.token_urlsafe(16)
 
-    params: Dict[str, Any] = {
+    params: dict[str, Any] = {
         "response_type": "code",
         "client_id": client_id,
         "redirect_uri": redirect_uri,
@@ -143,7 +142,7 @@ def generate_client_assertion_jwt(
         "exp": now + expires_in,
         "iat": now,
     }
-    header: Dict[str, Any] = {"alg": algorithm}
+    header: dict[str, Any] = {"alg": algorithm}
     if key_id:
         header["kid"] = key_id
 
@@ -151,7 +150,7 @@ def generate_client_assertion_jwt(
         token = authlib_jwt.encode(header=header, payload=claims, key=private_key)
         return token.decode() if isinstance(token, bytes) else token
     except Exception as exc:
-        raise ValueError(f"Failed to generate JWT client assertion: {exc}")
+        raise ValueError(f"Failed to generate JWT client assertion: {exc}") from exc
 
 
 def generate_jwt_bearer_assertion(
@@ -162,7 +161,7 @@ def generate_jwt_bearer_assertion(
     algorithm: str = JWT_DEFAULT_ALGORITHM,
     expires_in: int = JWT_BEARER_ASSERTION_EXPIRES_IN,
     audience: Optional[str] = None,
-    additional_claims: Optional[Dict[str, Any]] = None,
+    additional_claims: Optional[dict[str, Any]] = None,
     key_id: Optional[str] = None,
 ) -> str:
     """Generate a signed JWT assertion for the JWT Bearer Grant (RFC 7523).
@@ -213,7 +212,7 @@ def generate_jwt_bearer_assertion(
         )
 
     now = int(time.time())
-    claims: Dict[str, Any] = {
+    claims: dict[str, Any] = {
         "iss": issuer,
         "sub": subject,
         "aud": audience or token_endpoint,
@@ -224,7 +223,7 @@ def generate_jwt_bearer_assertion(
     if additional_claims:
         claims.update(additional_claims)
 
-    header: Dict[str, Any] = {"alg": algorithm}
+    header: dict[str, Any] = {"alg": algorithm}
     if key_id:
         header["kid"] = key_id
 
@@ -232,4 +231,4 @@ def generate_jwt_bearer_assertion(
         token = authlib_jwt.encode(header=header, payload=claims, key=private_key)
         return token.decode() if isinstance(token, bytes) else token
     except Exception as exc:
-        raise ValueError(f"Failed to generate JWT Bearer assertion: {exc}")
+        raise ValueError(f"Failed to generate JWT Bearer assertion: {exc}") from exc

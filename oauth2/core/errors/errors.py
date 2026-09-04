@@ -31,11 +31,7 @@ class VerifyError(Exception):
         self.error_description = error_description
 
     def __str__(self) -> str:
-        if (
-            self.status_code is None
-            and self.error is None
-            and self.error_description is None
-        ):
+        if self.status_code is None and self.error is None and self.error_description is None:
             return self.message
         parts = [self.message]
         if self.status_code is not None:
