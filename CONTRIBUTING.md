@@ -8,7 +8,7 @@ In general, coding guidelines are specific to the language used.
 
 ### Python
 
-Please run `ruff check oauth2/` and `ruff format --check oauth2/` and fix any issues found.
+Please run `ruff check ibm_verify/` and `ruff format --check ibm_verify/` and fix any issues found.
 
 ## Issues and Questions
 

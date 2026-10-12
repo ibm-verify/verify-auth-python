@@ -6,24 +6,24 @@ IBM Verify OAuth client.
 ``OAuthClient`` is the single public entry point for all token-acquisition
 and OAuth 2.0 operations.  It composes every mixin into one coherent class::
 
-    from oauth2.auth.client import OAuthClient
+    from ibm_verify.oauth2.auth.client import OAuthClient
 
     client = OAuthClient(base_url="https://your-tenant.verify.ibm.com")
     client.load_discovery()
     token = client.client_credentials(client_id="...", client_secret="...")
 """
 
-from oauth2.grant_types.base import OAuthBase
-from oauth2.grant_types.flows.discovery import DiscoveryMixin
-from oauth2.grant_types.flows.introspection import IntrospectMixin
-from oauth2.grant_types.flows.registration import DcrMixin
-from oauth2.grant_types.grants.authorization_code import AuthorizationCodeMixin
-from oauth2.grant_types.grants.client_credentials import ClientCredentialsMixin
-from oauth2.grant_types.grants.device_code import DeviceCodeMixin
-from oauth2.grant_types.grants.jwt_bearer import JWTBearerMixin
-from oauth2.grant_types.grants.password import PasswordGrantMixin
-from oauth2.grant_types.grants.refresh_token import RefreshTokenMixin
-from oauth2.grant_types.grants.token_exchange import TokenExchangeMixin
+from ibm_verify.oauth2.grant_types.base import OAuthBase
+from ibm_verify.oauth2.grant_types.flows.discovery import DiscoveryMixin
+from ibm_verify.oauth2.grant_types.flows.introspection import IntrospectMixin
+from ibm_verify.oauth2.grant_types.flows.registration import DcrMixin
+from ibm_verify.oauth2.grant_types.grants.authorization_code import AuthorizationCodeMixin
+from ibm_verify.oauth2.grant_types.grants.client_credentials import ClientCredentialsMixin
+from ibm_verify.oauth2.grant_types.grants.device_code import DeviceCodeMixin
+from ibm_verify.oauth2.grant_types.grants.jwt_bearer import JWTBearerMixin
+from ibm_verify.oauth2.grant_types.grants.password import PasswordGrantMixin
+from ibm_verify.oauth2.grant_types.grants.refresh_token import RefreshTokenMixin
+from ibm_verify.oauth2.grant_types.grants.token_exchange import TokenExchangeMixin
 
 
 class OAuthClient(
@@ -52,7 +52,7 @@ class OAuthClient(
 
     Example::
 
-        from oauth2.auth.client import OAuthClient
+        from ibm_verify.oauth2.auth.client import OAuthClient
 
         with OAuthClient(base_url="https://your-tenant.verify.ibm.com") as client:
             client.load_discovery()

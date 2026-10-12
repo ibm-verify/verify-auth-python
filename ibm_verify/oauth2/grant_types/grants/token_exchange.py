@@ -11,8 +11,8 @@ import httpx
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.httpx_client import OAuth2Client
 
-from oauth2.core.errors.errors import VerifyError
-from oauth2.grant_types.constants import (
+from ibm_verify.oauth2.core.errors.errors import VerifyError
+from ibm_verify.oauth2.grant_types.constants import (
     GRANT_TOKEN_EXCHANGE,
     TOKEN_TYPE_ACCESS_TOKEN,
 )
@@ -21,7 +21,7 @@ from oauth2.grant_types.constants import (
 class TokenExchangeMixin:
     """Mixin that adds the Token Exchange grant (RFC 8693).
 
-    Requires :class:`~oauth2.grant_types.base.OAuthBase` in the MRO.
+    Requires :class:`~ibm_verify.oauth2.grant_types.base.OAuthBase` in the MRO.
     """
 
     def token_exchange(

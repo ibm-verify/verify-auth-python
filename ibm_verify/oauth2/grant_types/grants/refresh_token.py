@@ -11,15 +11,15 @@ import httpx
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.httpx_client import OAuth2Client
 
-from oauth2.core.errors.errors import VerifyError
-from oauth2.grant_types.constants import CLIENT_ASSERTION_TYPE_JWT
+from ibm_verify.oauth2.core.errors.errors import VerifyError
+from ibm_verify.oauth2.grant_types.constants import CLIENT_ASSERTION_TYPE_JWT
 
 
 class RefreshTokenMixin:
     """Mixin that adds the Refresh Token grant (RFC 6749 §6).
 
     Supports ``client_secret_post``, ``private_key_jwt``, and public clients.
-    Requires :class:`~oauth2.grant_types.base.OAuthBase` in the MRO.
+    Requires :class:`~ibm_verify.oauth2.grant_types.base.OAuthBase` in the MRO.
     """
 
     def refresh_access_token(
@@ -43,7 +43,7 @@ class RefreshTokenMixin:
             refresh_token: Refresh token from a previous token response.
             client_secret: Client secret (confidential clients, ``client_secret_post``).
             client_assertion: JWT for ``private_key_jwt`` client authentication.
-                Generate with :func:`~oauth2.grant_types.utils.generate_client_assertion_jwt`.
+                Generate with :func:`~ibm_verify.oauth2.grant_types.utils.generate_client_assertion_jwt`.
             client_assertion_type: Assertion type URN (required with ``client_assertion``).
             scope: Optional scopes — must be a subset of the original grant.
             token_endpoint: Optional token endpoint override.

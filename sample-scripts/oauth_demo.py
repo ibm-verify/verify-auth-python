@@ -38,7 +38,7 @@ from urllib.parse import parse_qs, urlparse
 
 from dotenv import load_dotenv
 
-from oauth2.grant_types import (
+from ibm_verify.oauth2.grant_types import (
     AuthorizationCodeMixin,
     ClientCredentialsMixin,
     DeviceCodeMixin,

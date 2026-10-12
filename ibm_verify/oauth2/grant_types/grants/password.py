@@ -13,13 +13,13 @@ import httpx
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.httpx_client import OAuth2Client
 
-from oauth2.core.errors.errors import VerifyError
+from ibm_verify.oauth2.core.errors.errors import VerifyError
 
 
 class PasswordGrantMixin:
     """Mixin that adds the Resource Owner Password Credentials grant.
 
-    Requires :class:`~oauth2.grant_types.base.OAuthBase` in the MRO.
+    Requires :class:`~ibm_verify.oauth2.grant_types.base.OAuthBase` in the MRO.
     """
 
     def password_grant(

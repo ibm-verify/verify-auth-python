@@ -46,7 +46,7 @@ from dotenv import load_dotenv
 # Load from sample-scripts/.env (when run from project root: python sample-scripts/...)
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
-from oauth2.auth.client import OAuthClient  # noqa: E402  # pylint: disable=wrong-import-position
+from ibm_verify.oauth2.auth.client import OAuthClient  # noqa: E402  # pylint: disable=wrong-import-position
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 TENANT_URL    = os.getenv("IBM_VERIFY_TENANT_URL", "").rstrip("/")

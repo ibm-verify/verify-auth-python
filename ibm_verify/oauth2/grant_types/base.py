@@ -13,7 +13,7 @@ from typing import Any, Optional
 import httpx
 from authlib.oidc.discovery import OpenIDProviderMetadata
 
-from oauth2.grant_types.constants import (
+from ibm_verify.oauth2.grant_types.constants import (
     DEFAULT_AUTHORIZE_PATH,
     DEFAULT_DEVICE_AUTH_PATH,
     DEFAULT_INTROSPECT_PATH,
