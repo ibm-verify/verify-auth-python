@@ -37,9 +37,9 @@ import httpx
 import pytest
 import respx
 
-from oauth2.auth.client import OAuthClient
-from oauth2.core.errors.errors import VerifyError
-from oauth2.grant_types.utils import build_authorization_url, generate_pkce_pair
+from ibm_verify.oauth2.auth.client import OAuthClient
+from ibm_verify.oauth2.core.errors.errors import VerifyError
+from ibm_verify.oauth2.grant_types.utils import build_authorization_url, generate_pkce_pair
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -86,12 +86,11 @@ INTROSPECT_ACTIVE = {
     "exp": 9999999999,
 }
 
-JWKS_DOC = {
-    "keys": [{"kty": "RSA", "kid": "server", "use": "sig", "n": "abc", "e": "AQAB"}]
-}
+JWKS_DOC = {"keys": [{"kty": "RSA", "kid": "server", "use": "sig", "n": "abc", "e": "AQAB"}]}
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
+
 
 def make_client(*, with_discovery: bool = False) -> OAuthClient:
     """Return an OAuthClient pointed at the fake tenant."""
@@ -99,6 +98,7 @@ def make_client(*, with_discovery: bool = False) -> OAuthClient:
     if with_discovery:
         # Pre-populate discovery so the resolver uses TOKEN_EP from the doc
         from authlib.oidc.discovery import OpenIDProviderMetadata
+
         client._provider_metadata = OpenIDProviderMetadata(DISCOVERY_DOC)
     return client
 
@@ -117,6 +117,7 @@ def error_response(status: int, error: str, description: str = "") -> httpx.Resp
 # ══════════════════════════════════════════════════════════════════════════════
 # OAuthBase — endpoint resolution
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestOAuthBaseEndpointResolution:
     """Tests for OAuthBase._resolve_*_endpoint() priority chain.
@@ -171,8 +172,9 @@ class TestOAuthBaseEndpointResolution:
 # Utils
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestUtils:
-    """Tests for the stateless utility helpers in oauth2.grant_types.utils.
+    """Tests for the stateless utility helpers in ibm_verify.oauth2.grant_types.utils.
 
     generate_pkce_pair()       — RFC 7636 PKCE code_verifier / code_challenge generation
     build_authorization_url()  — builds the PKCE authorization redirect URL
@@ -266,6 +268,7 @@ class TestUtils:
 # DiscoveryMixin
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDiscoveryMixin:
     """Tests for DiscoveryMixin.load_discovery() and get_jwks().
 
@@ -336,6 +339,7 @@ class TestDiscoveryMixin:
 # PasswordGrantMixin
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestPasswordGrantMixin:
     """Tests for PasswordGrantMixin.password_grant() — RFC 6749 §4.3.
 
@@ -403,6 +407,7 @@ class TestPasswordGrantMixin:
 # ══════════════════════════════════════════════════════════════════════════════
 # ClientCredentialsMixin
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestClientCredentialsMixin:
     """Tests for ClientCredentialsMixin.client_credentials() — RFC 6749 §4.4.
@@ -485,6 +490,7 @@ class TestClientCredentialsMixin:
 # TokenExchangeMixin
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestTokenExchangeMixin:
     """Tests for TokenExchangeMixin.token_exchange() — RFC 8693.
 
@@ -522,8 +528,10 @@ class TestTokenExchangeMixin:
             subject_token="sub",
             actor_token="act",
         )
-        assert "urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Atoken-exchange" in captured["body"] \
-               or "grant-type:token-exchange" in captured["body"]
+        assert (
+            "urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Atoken-exchange" in captured["body"]
+            or "grant-type:token-exchange" in captured["body"]
+        )
 
     @respx.mock
     def test_error_raises_verify_error(self):
@@ -544,6 +552,7 @@ class TestTokenExchangeMixin:
 # ══════════════════════════════════════════════════════════════════════════════
 # AuthorizationCodeMixin
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestAuthorizationCodeMixin:
     """Tests for AuthorizationCodeMixin — RFC 7636 Authorization Code + PKCE.
@@ -616,9 +625,7 @@ class TestAuthorizationCodeMixin:
     @respx.mock
     def test_invalid_code_raises_verify_error(self):
         """An expired or already-used authorization code raises VerifyError."""
-        respx.post(TOKEN_EP).mock(
-            return_value=error_response(400, "invalid_grant", "Code expired")
-        )
+        respx.post(TOKEN_EP).mock(return_value=error_response(400, "invalid_grant", "Code expired"))
         client = make_client(with_discovery=True)
         verifier, _ = OAuthClient.generate_pkce_pair()
         with pytest.raises(VerifyError):
@@ -662,9 +669,7 @@ class TestDeviceCodeMixin:
     @respx.mock
     def test_request_device_code_happy(self):
         """device_code and user_code are returned from the device_authorization endpoint."""
-        respx.post(DEVICE_AUTH_EP).mock(
-            return_value=httpx.Response(200, json=DEVICE_CODE_RESPONSE)
-        )
+        respx.post(DEVICE_AUTH_EP).mock(return_value=httpx.Response(200, json=DEVICE_CODE_RESPONSE))
         client = make_client(with_discovery=True)
         result = client.request_device_code(client_id="device-client", scope="openid")
         assert result["device_code"] == "dev-code-abc"
@@ -673,9 +678,7 @@ class TestDeviceCodeMixin:
     @respx.mock
     def test_request_device_code_http_error(self):
         """A 401 from the device_authorization endpoint raises VerifyError with status_code=401."""
-        respx.post(DEVICE_AUTH_EP).mock(
-            return_value=error_response(401, "invalid_client")
-        )
+        respx.post(DEVICE_AUTH_EP).mock(return_value=error_response(401, "invalid_client"))
         client = make_client(with_discovery=True)
         with pytest.raises(VerifyError) as exc_info:
             client.request_device_code(client_id="bad-client")
@@ -716,9 +719,7 @@ class TestDeviceCodeMixin:
     @respx.mock
     def test_poll_device_token_access_denied_raises(self):
         """access_denied error (user rejected the request) raises VerifyError with error='access_denied'."""
-        respx.post(TOKEN_EP).mock(
-            return_value=httpx.Response(200, json={"error": "access_denied"})
-        )
+        respx.post(TOKEN_EP).mock(return_value=httpx.Response(200, json={"error": "access_denied"}))
         client = make_client(with_discovery=True)
         with pytest.raises(VerifyError) as exc_info:
             client.poll_device_token(
@@ -732,9 +733,7 @@ class TestDeviceCodeMixin:
     @respx.mock
     def test_poll_device_token_expired_token_raises(self):
         """expired_token error (device code TTL elapsed) raises VerifyError with error='expired_token'."""
-        respx.post(TOKEN_EP).mock(
-            return_value=httpx.Response(200, json={"error": "expired_token"})
-        )
+        respx.post(TOKEN_EP).mock(return_value=httpx.Response(200, json={"error": "expired_token"}))
         client = make_client(with_discovery=True)
         with pytest.raises(VerifyError) as exc_info:
             client.poll_device_token(
@@ -789,6 +788,7 @@ class TestDeviceCodeMixin:
 # ══════════════════════════════════════════════════════════════════════════════
 # JWTBearerMixin
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestJWTBearerMixin:
     """Tests for JWTBearerMixin.jwt_bearer_grant() — RFC 7523 JWT Bearer Grant.
@@ -861,6 +861,7 @@ class TestJWTBearerMixin:
 # ══════════════════════════════════════════════════════════════════════════════
 # RefreshTokenMixin
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestRefreshTokenMixin:
     """Tests for RefreshTokenMixin.refresh_access_token() — RFC 6749 §6.
@@ -937,6 +938,7 @@ class TestRefreshTokenMixin:
 # IntrospectMixin
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestIntrospectMixin:
     """Tests for IntrospectMixin.introspect_token() — RFC 7662 Token Introspection.
 
@@ -947,9 +949,7 @@ class TestIntrospectMixin:
     @respx.mock
     def test_happy_path_active_token(self):
         """An active token returns active=True with sub and scope fields."""
-        respx.post(INTROSPECT_EP).mock(
-            return_value=httpx.Response(200, json=INTROSPECT_ACTIVE)
-        )
+        respx.post(INTROSPECT_EP).mock(return_value=httpx.Response(200, json=INTROSPECT_ACTIVE))
         client = make_client(with_discovery=True)
         result = client.introspect_token(
             token="some-access-token",
@@ -963,9 +963,7 @@ class TestIntrospectMixin:
     @respx.mock
     def test_inactive_token_returns_active_false(self):
         """An expired or revoked token returns active=False (not an error — a valid response)."""
-        respx.post(INTROSPECT_EP).mock(
-            return_value=httpx.Response(200, json={"active": False})
-        )
+        respx.post(INTROSPECT_EP).mock(return_value=httpx.Response(200, json={"active": False}))
         client = make_client(with_discovery=True)
         result = client.introspect_token(
             token="expired-token",
@@ -991,9 +989,7 @@ class TestIntrospectMixin:
     def test_explicit_endpoint_override(self):
         """introspect_endpoint kwarg bypasses discovery and uses the supplied URL directly."""
         custom_ep = "https://custom.example.com/introspect"
-        respx.post(custom_ep).mock(
-            return_value=httpx.Response(200, json=INTROSPECT_ACTIVE)
-        )
+        respx.post(custom_ep).mock(return_value=httpx.Response(200, json=INTROSPECT_ACTIVE))
         client = OAuthClient(base_url=BASE)
         result = client.introspect_token(
             token="tok",
@@ -1007,6 +1003,7 @@ class TestIntrospectMixin:
 # ══════════════════════════════════════════════════════════════════════════════
 # VerifyError
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestVerifyError:
     """Tests for the VerifyError exception class.
@@ -1151,6 +1148,7 @@ class TestDcrMixin:
             return_value=httpx.Response(201, json=DCR_REGISTRATION_RESPONSE)
         )
         from authlib.oidc.discovery import OpenIDProviderMetadata
+
         client = make_client()
         client._provider_metadata = OpenIDProviderMetadata(discovery_doc)
         result = client.register_client(client_metadata=DCR_CLIENT_METADATA)
@@ -1164,11 +1162,14 @@ class TestDcrMixin:
             return_value=httpx.Response(201, json=DCR_REGISTRATION_RESPONSE)
         )
         from authlib.oidc.discovery import OpenIDProviderMetadata
+
         client = make_client()
-        client._provider_metadata = OpenIDProviderMetadata({
-            **DISCOVERY_DOC,
-            "registration_endpoint": f"{BASE}/oauth2/register",
-        })
+        client._provider_metadata = OpenIDProviderMetadata(
+            {
+                **DISCOVERY_DOC,
+                "registration_endpoint": f"{BASE}/oauth2/register",
+            }
+        )
         result = client.register_client(
             client_metadata=DCR_CLIENT_METADATA,
             registration_endpoint=override_ep,
@@ -1191,9 +1192,7 @@ class TestDcrMixin:
     def test_register_client_400_raises_verify_error(self):
         """A 400 (bad metadata) raises VerifyError."""
         respx.post(REGISTER_EP).mock(
-            return_value=httpx.Response(
-                400, json={"error": "invalid_client_metadata"}
-            )
+            return_value=httpx.Response(400, json={"error": "invalid_client_metadata"})
         )
         with pytest.raises(VerifyError) as exc_info:
             make_client().register_client(client_metadata={"bad": "metadata"})
@@ -1212,9 +1211,7 @@ class TestDcrMixin:
     @respx.mock
     def test_read_client_happy_path(self):
         """GET to the registration_client_uri returns current metadata."""
-        respx.get(CLIENT_URI).mock(
-            return_value=httpx.Response(200, json=DCR_REGISTRATION_RESPONSE)
-        )
+        respx.get(CLIENT_URI).mock(return_value=httpx.Response(200, json=DCR_REGISTRATION_RESPONSE))
         result = make_client().read_client(
             registration_access_token="reg-tok-xyz",
             registration_client_uri=CLIENT_URI,
@@ -1253,9 +1250,7 @@ class TestDcrMixin:
     @respx.mock
     def test_read_client_404_raises_verify_error(self):
         """A 404 (client not found or already deleted) raises VerifyError."""
-        respx.get(CLIENT_URI).mock(
-            return_value=httpx.Response(404, json={"error": "not_found"})
-        )
+        respx.get(CLIENT_URI).mock(return_value=httpx.Response(404, json={"error": "not_found"}))
         with pytest.raises(VerifyError) as exc_info:
             make_client().read_client(
                 registration_access_token="reg-tok-xyz",
@@ -1279,9 +1274,7 @@ class TestDcrMixin:
     @respx.mock
     def test_update_client_happy_path(self):
         """PUT to the registration_client_uri returns updated metadata."""
-        respx.put(CLIENT_URI).mock(
-            return_value=httpx.Response(200, json=DCR_UPDATED_METADATA)
-        )
+        respx.put(CLIENT_URI).mock(return_value=httpx.Response(200, json=DCR_UPDATED_METADATA))
         result = make_client().update_client(
             registration_access_token="reg-tok-xyz",
             registration_client_uri=CLIENT_URI,
@@ -1341,9 +1334,7 @@ class TestDcrMixin:
     @respx.mock
     def test_delete_client_happy_path(self):
         """DELETE to registration_client_uri returns None on HTTP 204."""
-        respx.delete(CLIENT_URI).mock(
-            return_value=httpx.Response(204)
-        )
+        respx.delete(CLIENT_URI).mock(return_value=httpx.Response(204))
         result = make_client().delete_client(
             registration_access_token="reg-tok-xyz",
             registration_client_uri=CLIENT_URI,
@@ -1369,9 +1360,7 @@ class TestDcrMixin:
     @respx.mock
     def test_delete_client_404_raises_verify_error(self):
         """A 404 (already deleted or unknown client) raises VerifyError."""
-        respx.delete(CLIENT_URI).mock(
-            return_value=httpx.Response(404, json={"error": "not_found"})
-        )
+        respx.delete(CLIENT_URI).mock(return_value=httpx.Response(404, json={"error": "not_found"}))
         with pytest.raises(VerifyError) as exc_info:
             make_client().delete_client(
                 registration_access_token="reg-tok-xyz",
@@ -1419,7 +1408,7 @@ class TestDcrMixin:
 
         reg_response = {**DCR_REGISTRATION_RESPONSE, "registration_access_token": RAT_STEP1}
         read_response = {**DCR_REGISTRATION_RESPONSE, "registration_access_token": RAT_STEP2}
-        update_response = {**DCR_UPDATED_METADATA,    "registration_access_token": RAT_STEP3}
+        update_response = {**DCR_UPDATED_METADATA, "registration_access_token": RAT_STEP3}
 
         # Step 1 — register
         respx.post(REGISTER_EP).mock(return_value=httpx.Response(201, json=reg_response))
@@ -1437,7 +1426,7 @@ class TestDcrMixin:
             initial_access_token="iat-abc",
         )
         assert reg["client_id"] == "client-xyz"
-        rat = reg["registration_access_token"]   # RAT_STEP1
+        rat = reg["registration_access_token"]  # RAT_STEP1
         rcu = reg["registration_client_uri"]
         assert rat == RAT_STEP1
 
@@ -1472,6 +1461,7 @@ class TestDcrMixin:
 # client_metadata verbatim to the server — no field is dropped, renamed, or
 # validated by the SDK.  All network calls are mocked; no live tenant needed.
 # ==============================================================================
+
 
 class TestDcrFieldPassthrough:
     """SDK passes all client_metadata fields through to the server unchanged."""
@@ -1558,9 +1548,7 @@ class TestDcrFieldPassthrough:
 
         make_client().register_client(client_metadata=metadata)
 
-        assert captured["body"]["grant_types"] == [
-            "urn:ietf:params:oauth:grant-type:device_code"
-        ]
+        assert captured["body"]["grant_types"] == ["urn:ietf:params:oauth:grant-type:device_code"]
 
     @respx.mock
     def test_jwt_bearer_grant_type_forwarded(self):
@@ -1678,7 +1666,9 @@ class TestDcrFieldPassthrough:
     def test_application_type_forwarded(self):
         """application_type (web / native) is forwarded as a plain string."""
         for app_type in ("web", "native"):
-            captured, capture_fn = TestDcrFieldPassthrough._capture_register(DCR_REGISTRATION_RESPONSE)
+            captured, capture_fn = TestDcrFieldPassthrough._capture_register(
+                DCR_REGISTRATION_RESPONSE
+            )
             respx.post(REGISTER_EP).mock(side_effect=capture_fn)
 
             make_client().register_client(
@@ -1878,12 +1868,13 @@ class TestDcrFieldPassthrough:
 # and correctly serialised.
 # ==============================================================================
 
+
 class TestAuthorizationDetailsAllGrants:
     """authorization_details and extra_params reach the wire on every grant type."""
 
     RAR_PAYLOAD = [{"type": "account_information", "actions": ["read"]}]
-    RAR_JSON    = json.dumps(RAR_PAYLOAD)
-    EXTRA       = {"resource": "https://api.example.com", "audience": "my-service"}
+    RAR_JSON = json.dumps(RAR_PAYLOAD)
+    EXTRA = {"resource": "https://api.example.com", "audience": "my-service"}
 
     # ── client_credentials ────────────────────────────────────────────────────
 
@@ -1893,9 +1884,10 @@ class TestAuthorizationDetailsAllGrants:
         captured: dict = {}
 
         def capture(request: httpx.Request) -> httpx.Response:
-            captured["body"] = dict(request.url.params)   # form-encoded body
+            captured["body"] = dict(request.url.params)  # form-encoded body
             # respx puts form data in the content bytes
             from urllib.parse import parse_qs
+
             captured["form"] = parse_qs(request.content.decode())
             return httpx.Response(200, json=ACCESS_TOKEN_RESPONSE)
 
@@ -1917,6 +1909,7 @@ class TestAuthorizationDetailsAllGrants:
     def test_client_credentials_extra_params(self):
         """extra_params key/values are merged into the client_credentials body."""
         from urllib.parse import parse_qs
+
         captured: dict = {}
 
         def capture(request: httpx.Request) -> httpx.Response:
@@ -1940,6 +1933,7 @@ class TestAuthorizationDetailsAllGrants:
     def test_client_credentials_preserialised_string_not_double_encoded(self):
         """A pre-serialised JSON string is forwarded as-is without double-encoding."""
         from urllib.parse import parse_qs
+
         captured: dict = {}
 
         def capture(request: httpx.Request) -> httpx.Response:
@@ -1968,17 +1962,21 @@ class TestAuthorizationDetailsAllGrants:
     def test_device_code_authorization_details(self):
         """authorization_details is JSON-encoded in the device_authorization body."""
         from urllib.parse import parse_qs
+
         captured: dict = {}
 
         def capture(request: httpx.Request) -> httpx.Response:
             captured["form"] = parse_qs(request.content.decode())
-            return httpx.Response(200, json={
-                "device_code": "dc123",
-                "user_code": "ABCD-1234",
-                "verification_uri": "https://example.com/activate",
-                "expires_in": 300,
-                "interval": 5,
-            })
+            return httpx.Response(
+                200,
+                json={
+                    "device_code": "dc123",
+                    "user_code": "ABCD-1234",
+                    "verification_uri": "https://example.com/activate",
+                    "expires_in": 300,
+                    "interval": 5,
+                },
+            )
 
         respx.post(DEVICE_AUTH_EP).mock(side_effect=capture)
         make_client(with_discovery=True).request_device_code(
@@ -1996,17 +1994,21 @@ class TestAuthorizationDetailsAllGrants:
     def test_device_code_extra_params(self):
         """extra_params are merged into the device_authorization request body."""
         from urllib.parse import parse_qs
+
         captured: dict = {}
 
         def capture(request: httpx.Request) -> httpx.Response:
             captured["form"] = parse_qs(request.content.decode())
-            return httpx.Response(200, json={
-                "device_code": "dc123",
-                "user_code": "ABCD-1234",
-                "verification_uri": "https://example.com/activate",
-                "expires_in": 300,
-                "interval": 5,
-            })
+            return httpx.Response(
+                200,
+                json={
+                    "device_code": "dc123",
+                    "user_code": "ABCD-1234",
+                    "verification_uri": "https://example.com/activate",
+                    "expires_in": 300,
+                    "interval": 5,
+                },
+            )
 
         respx.post(DEVICE_AUTH_EP).mock(side_effect=capture)
         make_client(with_discovery=True).request_device_code(
@@ -2023,6 +2025,7 @@ class TestAuthorizationDetailsAllGrants:
     def test_jwt_bearer_authorization_details(self):
         """authorization_details is JSON-encoded in the jwt_bearer grant body."""
         from urllib.parse import parse_qs
+
         captured: dict = {}
 
         def capture(request: httpx.Request) -> httpx.Response:
@@ -2047,6 +2050,7 @@ class TestAuthorizationDetailsAllGrants:
     def test_jwt_bearer_extra_params(self):
         """extra_params are merged into the jwt_bearer grant body."""
         from urllib.parse import parse_qs
+
         captured: dict = {}
 
         def capture(request: httpx.Request) -> httpx.Response:
@@ -2072,6 +2076,7 @@ class TestAuthorizationDetailsAllGrants:
     def test_refresh_token_authorization_details(self):
         """authorization_details is JSON-encoded in the refresh_token grant body."""
         from urllib.parse import parse_qs
+
         captured: dict = {}
 
         def capture(request: httpx.Request) -> httpx.Response:
@@ -2095,6 +2100,7 @@ class TestAuthorizationDetailsAllGrants:
     def test_refresh_token_extra_params(self):
         """extra_params are merged into the refresh_token grant body."""
         from urllib.parse import parse_qs
+
         captured: dict = {}
 
         def capture(request: httpx.Request) -> httpx.Response:
@@ -2117,6 +2123,7 @@ class TestAuthorizationDetailsAllGrants:
     def test_token_exchange_authorization_details(self):
         """authorization_details is JSON-encoded in the token_exchange grant body."""
         from urllib.parse import parse_qs
+
         captured: dict = {}
 
         def capture(request: httpx.Request) -> httpx.Response:
@@ -2141,6 +2148,7 @@ class TestAuthorizationDetailsAllGrants:
     def test_token_exchange_extra_params(self):
         """extra_params are merged into the token_exchange grant body."""
         from urllib.parse import parse_qs
+
         captured: dict = {}
 
         def capture(request: httpx.Request) -> httpx.Response:
@@ -2165,6 +2173,7 @@ class TestAuthorizationDetailsAllGrants:
     def test_auth_code_exchange_authorization_details(self):
         """authorization_details is JSON-encoded in the authorization_code token body."""
         from urllib.parse import parse_qs
+
         captured: dict = {}
 
         def capture(request: httpx.Request) -> httpx.Response:
@@ -2190,6 +2199,7 @@ class TestAuthorizationDetailsAllGrants:
     def test_auth_code_exchange_extra_params(self):
         """extra_params are merged into the authorization_code token request body."""
         from urllib.parse import parse_qs
+
         captured: dict = {}
 
         def capture(request: httpx.Request) -> httpx.Response:

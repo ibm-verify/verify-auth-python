@@ -11,14 +11,14 @@ from typing import Any, Optional
 import httpx
 from authlib.oidc.discovery import OpenIDProviderMetadata, get_well_known_url
 
-from oauth2.core.errors.errors import VerifyError
+from ibm_verify.oauth2.core.errors.errors import VerifyError
 
 
 class DiscoveryMixin:
     """Mixin that adds OIDC discovery document loading and JWKS fetching.
 
     Requires ``self.base_url``, ``self._http_client``, and
-    ``self._provider_metadata`` from :class:`~oauth2.grant_types.base.OAuthBase`.
+    ``self._provider_metadata`` from :class:`~ibm_verify.oauth2.grant_types.base.OAuthBase`.
     """
 
     def load_discovery(

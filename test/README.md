@@ -73,7 +73,7 @@ cd /path/to/verify-auth-python
 | Test class | SDK component | What is tested |
 |---|---|---|
 | `TestOAuthBaseEndpointResolution` | `OAuthBase` | Endpoint resolution priority: caller arg > constructor override > discovery > default path. Trailing-slash stripping. |
-| `TestUtils` | `grant_types.utils` | PKCE pair length, uniqueness, S256 hash correctness. `build_authorization_url` params, auto-state, RAR serialisation, extra_params. |
+| `TestUtils` | `ibm_verify.oauth2.grant_types.utils` | PKCE pair length, uniqueness, S256 hash correctness. `build_authorization_url` params, auto-state, RAR serialisation, extra_params. |
 | `TestDiscoveryMixin` | `DiscoveryMixin` | Discovery happy path, HTTP 404, network error. JWKS happy, JWKS 500. Cached metadata not re-fetched. |
 | `TestPasswordGrantMixin` | `PasswordGrantMixin` | Happy path, `invalid_grant` → `VerifyError`, RAR body forwarded. |
 | `TestClientCredentialsMixin` | `ClientCredentialsMixin` | Happy path, `invalid_client` → `VerifyError`, RAR forwarded, `extra_params` forwarded. |

@@ -16,7 +16,7 @@ import time
 import uuid
 from typing import Any, Optional
 
-from oauth2.grant_types.constants import (
+from ibm_verify.oauth2.grant_types.constants import (
     JWT_BEARER_ASSERTION_EXPIRES_IN,
     JWT_CLIENT_ASSERTION_EXPIRES_IN,
     JWT_DEFAULT_ALGORITHM,

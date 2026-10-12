@@ -23,10 +23,10 @@ jobs:
         run: pip install "ruff>=0.3.0"
 
       - name: ruff check
-        run: ruff check oauth2/
+        run: ruff check ibm_verify/
 
       - name: ruff format --check
-        run: ruff format --check oauth2/
+        run: ruff format --check ibm_verify/
 
   test:
     name: Test (Python ${{ matrix.python-version }})
@@ -68,8 +68,8 @@ jobs:
       - name: Verify package imports
         run: |
           pip install dist/*.whl
-          python -c "from oauth2.auth.client import OAuthClient; print('OAuthClient OK')"
-          python -c "from oauth2.grant_types import generate_pkce_pair; print('grant_types OK')"
+          python -c "from ibm_verify.oauth2.auth.client import OAuthClient; print('OAuthClient OK')"
+          python -c "from ibm_verify.oauth2.grant_types import generate_pkce_pair; print('grant_types OK')"
 
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4

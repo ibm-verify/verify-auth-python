@@ -59,8 +59,8 @@ from typing import Any, Dict, Optional
 from dotenv import load_dotenv
 
 # ── SDK imports ───────────────────────────────────────────────────────────────
-from oauth2.auth.client import OAuthClient
-from oauth2.core.errors import VerifyError
+from ibm_verify.oauth2.auth.client import OAuthClient
+from ibm_verify.oauth2.core.errors import VerifyError
 
 # ── Load .env ─────────────────────────────────────────────────────────────────
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))

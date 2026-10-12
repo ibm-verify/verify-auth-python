@@ -11,9 +11,9 @@ import httpx
 from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.httpx_client import OAuth2Client
 
-from oauth2.core.errors.errors import VerifyError
-from oauth2.grant_types.constants import CLIENT_ASSERTION_TYPE_JWT, GRANT_JWT_BEARER
-from oauth2.grant_types.utils import (
+from ibm_verify.oauth2.core.errors.errors import VerifyError
+from ibm_verify.oauth2.grant_types.constants import CLIENT_ASSERTION_TYPE_JWT, GRANT_JWT_BEARER
+from ibm_verify.oauth2.grant_types.utils import (
     generate_client_assertion_jwt,
     generate_jwt_bearer_assertion,
 )
@@ -22,12 +22,12 @@ from oauth2.grant_types.utils import (
 class JWTBearerMixin:
     """Mixin that adds the JWT Bearer grant and its assertion helpers (RFC 7523).
 
-    Requires :class:`~oauth2.grant_types.base.OAuthBase` in the MRO.
+    Requires :class:`~ibm_verify.oauth2.grant_types.base.OAuthBase` in the MRO.
     """
 
     # Re-expose the pure utility functions as static methods so callers can
     # use either ``OAuthClient.generate_jwt_bearer_assertion(...)`` or the
-    # standalone import from ``oauth2.grant_types.utils``.
+    # standalone import from ``ibm_verify.oauth2.grant_types.utils``.
     generate_client_assertion_jwt = staticmethod(generate_client_assertion_jwt)
     generate_jwt_bearer_assertion = staticmethod(generate_jwt_bearer_assertion)
 
@@ -53,7 +53,7 @@ class JWTBearerMixin:
 
         Args:
             assertion: Signed JWT assertion.
-                Generate with :func:`~oauth2.grant_types.utils.generate_jwt_bearer_assertion`.
+                Generate with :func:`~ibm_verify.oauth2.grant_types.utils.generate_jwt_bearer_assertion`.
             client_id: OAuth client ID.
             client_secret: Client secret for ``client_secret_post`` clients.
             scope: Optional requested scopes (space-separated).

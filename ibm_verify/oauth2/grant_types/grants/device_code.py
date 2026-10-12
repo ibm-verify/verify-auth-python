@@ -10,13 +10,13 @@ from typing import Any, Callable, Optional
 
 import httpx
 
-from oauth2.core.errors.errors import VerifyError
+from ibm_verify.oauth2.core.errors.errors import VerifyError
 
 
 class DeviceCodeMixin:
     """Mixin that adds the Device Authorization Grant (RFC 8628).
 
-    Requires :class:`~oauth2.grant_types.base.OAuthBase` in the MRO.
+    Requires :class:`~ibm_verify.oauth2.grant_types.base.OAuthBase` in the MRO.
     """
 
     def request_device_code(

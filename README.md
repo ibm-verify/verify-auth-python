@@ -67,7 +67,7 @@ For local development using the repository source code directly (without install
 `OAuthClient` is the single entry point for all token-acquisition operations.
 
 ```python
-from oauth2.auth.client import OAuthClient
+from ibm_verify.oauth2.auth.client import OAuthClient
 ```
 
 ### Construction
@@ -387,7 +387,7 @@ result = client.introspect_token(
 IBM Verify supports [RFC 7591](https://datatracker.ietf.org/doc/html/rfc7591) (OAuth 2.0 Dynamic Client Registration) and [RFC 7592](https://datatracker.ietf.org/doc/html/rfc7592) (Dynamic Client Registration Management). These methods allow you to register, read, update, and delete OAuth clients programmatically at runtime without manual portal configuration.
 
 ```python
-from oauth2.auth.client import OAuthClient
+from ibm_verify.oauth2.auth.client import OAuthClient
 ```
 
 Unlike the grant methods, the DCR methods take a single `client_metadata` dict rather than individual keyword arguments. This lets you pass through any field IBM Verify's registration endpoint accepts — standard RFC 7591 fields, OIDC fields (`jwks_uri`, `subject_type`, …), RAR (`authorization_details_types`), mTLS fields, or tenant-specific extensions — without the SDK needing to enumerate every one.
@@ -503,7 +503,7 @@ client.delete_client(
 #### DCR workflow example
 
 ```python
-from oauth2.auth.client import OAuthClient
+from ibm_verify.oauth2.auth.client import OAuthClient
 
 oauth = OAuthClient(base_url="https://your-tenant.verify.ibm.com")
 oauth.load_discovery()
@@ -544,7 +544,7 @@ oauth.delete_client(registration_access_token=rat, registration_client_uri=reg_u
 
 ### Utility functions
 
-The following token and cryptography helper functions are available as `OAuthClient` static methods or as standalone imports from `oauth2.grant_types.utils`:
+The following token and cryptography helper functions are available as `OAuthClient` static methods or as standalone imports from `ibm_verify.oauth2.grant_types.utils`:
 
 - **`generate_pkce_pair()`** — generates a PKCE code verifier and challenge pair for authorization code flows
 - **`generate_client_assertion_jwt()`** — creates a signed JWT for `private_key_jwt` client authentication
@@ -597,7 +597,7 @@ assertion = OAuthClient.generate_jwt_bearer_assertion(
 All SDK errors raise `VerifyError`:
 
 ```python
-from oauth2.core.errors.errors import VerifyError
+from ibm_verify.oauth2.core.errors.errors import VerifyError
 
 try:
     token = client.client_credentials(...)
@@ -622,21 +622,21 @@ except VerifyError as e:
 
 | Module | Description |
 |---|---|
-| `oauth2.auth.client` | `OAuthClient` — single entry point composing all grant mixins |
-| `oauth2.grant_types.base` | `OAuthBase` — constructor params, HTTP client, endpoint resolution |
-| `oauth2.grant_types.constants` | Grant-type URNs and default endpoint paths |
-| `oauth2.grant_types.flows.discovery` | `DiscoveryMixin` — `load_discovery()`, `get_discovery()`, `get_jwks()` |
-| `oauth2.grant_types.flows.introspection` | `IntrospectMixin` — `introspect_token()` |
-| `oauth2.grant_types.flows.registration` | `DcrMixin` — `register_client()`, `read_client()`, `update_client()`, `delete_client()` |
-| `oauth2.grant_types.utils` | `generate_pkce_pair()`, `generate_client_assertion_jwt()`, `generate_jwt_bearer_assertion()`, `build_authorization_url()` |
-| `oauth2.grant_types.grants.client_credentials` | `ClientCredentialsMixin` |
-| `oauth2.grant_types.grants.password` | `PasswordGrantMixin` |
-| `oauth2.grant_types.grants.authorization_code` | `AuthorizationCodeMixin` |
-| `oauth2.grant_types.grants.device_code` | `DeviceCodeMixin` |
-| `oauth2.grant_types.grants.token_exchange` | `TokenExchangeMixin` |
-| `oauth2.grant_types.grants.jwt_bearer` | `JWTBearerMixin` |
-| `oauth2.grant_types.grants.refresh_token` | `RefreshTokenMixin` |
-| `oauth2.core.errors.errors` | `VerifyError` base exception |
+| `ibm_verify.oauth2.auth.client` | `OAuthClient` — single entry point composing all grant mixins |
+| `ibm_verify.oauth2.grant_types.base` | `OAuthBase` — constructor params, HTTP client, endpoint resolution |
+| `ibm_verify.oauth2.grant_types.constants` | Grant-type URNs and default endpoint paths |
+| `ibm_verify.oauth2.grant_types.flows.discovery` | `DiscoveryMixin` — `load_discovery()`, `get_discovery()`, `get_jwks()` |
+| `ibm_verify.oauth2.grant_types.flows.introspection` | `IntrospectMixin` — `introspect_token()` |
+| `ibm_verify.oauth2.grant_types.flows.registration` | `DcrMixin` — `register_client()`, `read_client()`, `update_client()`, `delete_client()` |
+| `ibm_verify.oauth2.grant_types.utils` | `generate_pkce_pair()`, `generate_client_assertion_jwt()`, `generate_jwt_bearer_assertion()`, `build_authorization_url()` |
+| `ibm_verify.oauth2.grant_types.grants.client_credentials` | `ClientCredentialsMixin` |
+| `ibm_verify.oauth2.grant_types.grants.password` | `PasswordGrantMixin` |
+| `ibm_verify.oauth2.grant_types.grants.authorization_code` | `AuthorizationCodeMixin` |
+| `ibm_verify.oauth2.grant_types.grants.device_code` | `DeviceCodeMixin` |
+| `ibm_verify.oauth2.grant_types.grants.token_exchange` | `TokenExchangeMixin` |
+| `ibm_verify.oauth2.grant_types.grants.jwt_bearer` | `JWTBearerMixin` |
+| `ibm_verify.oauth2.grant_types.grants.refresh_token` | `RefreshTokenMixin` |
+| `ibm_verify.oauth2.core.errors.errors` | `VerifyError` base exception |
 
 </details>
 
@@ -646,26 +646,27 @@ except VerifyError as e:
 
 ```
 verify-auth-python/
-├── oauth2/
-│   ├── auth/
-│   │   └── client.py                  # OAuthClient
-│   ├── grant_types/
-│   │   ├── base.py                    # OAuthBase
-│   │   ├── constants.py
-│   │   ├── utils.py                   # PKCE + JWT helpers
-│   │   ├── flows/                     # Protocol flows
-│   │   │   ├── registration.py        # DcrMixin — Dynamic Client Registration
-│   │   │   ├── discovery.py           # DiscoveryMixin
-│   │   │   └── introspection.py       # IntrospectMixin
-│   │   └── grants/                    # Grant-type mixins
-│   │       ├── authorization_code.py
-│   │       ├── client_credentials.py
-│   │       ├── device_code.py
-│   │       ├── jwt_bearer.py
-│   │       ├── password.py
-│   │       ├── refresh_token.py
-│   │       └── token_exchange.py
-│   ├── core/errors/errors.py          # VerifyError
+├── ibm_verify/
+│   └── oauth2/
+│       ├── auth/
+│       │   └── client.py              # OAuthClient
+│       ├── grant_types/
+│       │   ├── base.py                # OAuthBase
+│       │   ├── constants.py
+│       │   ├── utils.py               # PKCE + JWT helpers
+│       │   ├── flows/                 # Protocol flows
+│       │   │   ├── registration.py    # DcrMixin — Dynamic Client Registration
+│       │   │   ├── discovery.py       # DiscoveryMixin
+│       │   │   └── introspection.py   # IntrospectMixin
+│       │   └── grants/                # Grant-type mixins
+│       │       ├── authorization_code.py
+│       │       ├── client_credentials.py
+│       │       ├── device_code.py
+│       │       ├── jwt_bearer.py
+│       │       ├── password.py
+│       │       ├── refresh_token.py
+│       │       └── token_exchange.py
+│       └── core/errors/errors.py      # VerifyError
 │
 ├── test/
 ├── sample-scripts/
@@ -695,8 +696,8 @@ Sample scripts depend on `python-dotenv`. Install sample dependencies with `pip 
 ### Lint and format
 
 ```bash
-ruff check oauth2/
-ruff format oauth2/
+ruff check ibm_verify/
+ruff format ibm_verify/
 ```
 
 ### Run tests

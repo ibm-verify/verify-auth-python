@@ -5,14 +5,14 @@ IBM Verify OAuth package.
 
 Provides a modular OAuth 2.0 / OIDC client for IBM Verify:
 
-    oauth2/oauth/
+    ibm_verify/oauth2/grant_types/
     ├── constants.py               — URL paths and grant-type URNs
     ├── utils.py                   — PKCE helpers, JWT assertion builders
     ├── base.py                    — OAuthBase: shared httpx client + endpoint resolvers
     ├── flows/
     │   ├── discovery.py           — DiscoveryMixin: load_discovery, get_jwks
-    │   ├── introspect.py          — IntrospectMixin: introspect_token
-    │   └── dcr.py                 — DcrMixin: Dynamic Client Registration (RFC 7591/7592)
+    │   ├── introspection.py       — IntrospectMixin: introspect_token
+    │   └── registration.py        — DcrMixin: Dynamic Client Registration (RFC 7591/7592)
     └── grants/
         ├── password.py            — PasswordGrantMixin
         ├── client_credentials.py  — ClientCredentialsMixin
@@ -22,13 +22,13 @@ Provides a modular OAuth 2.0 / OIDC client for IBM Verify:
         ├── device_code.py         — DeviceCodeMixin
         └── jwt_bearer.py          — JWTBearerMixin
 
-The top-level ``OAuthClient`` in ``oauth2.auth.client`` composes all
+The top-level ``OAuthClient`` in ``ibm_verify.oauth2.auth.client`` composes all
 mixins and is the primary public API.  Individual mixins and utilities can
 also be imported directly from this package for advanced use-cases.
 """
 
-from oauth2.grant_types.base import OAuthBase
-from oauth2.grant_types.constants import (
+from ibm_verify.oauth2.grant_types.base import OAuthBase
+from ibm_verify.oauth2.grant_types.constants import (
     CLIENT_ASSERTION_TYPE_JWT,
     DEFAULT_AUTHORIZE_PATH,
     DEFAULT_DEVICE_AUTH_PATH,
@@ -51,17 +51,17 @@ from oauth2.grant_types.constants import (
     TOKEN_TYPE_JWT,
     TOKEN_TYPE_REFRESH_TOKEN,
 )
-from oauth2.grant_types.flows.discovery import DiscoveryMixin
-from oauth2.grant_types.flows.introspection import IntrospectMixin
-from oauth2.grant_types.flows.registration import DcrMixin
-from oauth2.grant_types.grants.authorization_code import AuthorizationCodeMixin
-from oauth2.grant_types.grants.client_credentials import ClientCredentialsMixin
-from oauth2.grant_types.grants.device_code import DeviceCodeMixin
-from oauth2.grant_types.grants.jwt_bearer import JWTBearerMixin
-from oauth2.grant_types.grants.password import PasswordGrantMixin
-from oauth2.grant_types.grants.refresh_token import RefreshTokenMixin
-from oauth2.grant_types.grants.token_exchange import TokenExchangeMixin
-from oauth2.grant_types.utils import (
+from ibm_verify.oauth2.grant_types.flows.discovery import DiscoveryMixin
+from ibm_verify.oauth2.grant_types.flows.introspection import IntrospectMixin
+from ibm_verify.oauth2.grant_types.flows.registration import DcrMixin
+from ibm_verify.oauth2.grant_types.grants.authorization_code import AuthorizationCodeMixin
+from ibm_verify.oauth2.grant_types.grants.client_credentials import ClientCredentialsMixin
+from ibm_verify.oauth2.grant_types.grants.device_code import DeviceCodeMixin
+from ibm_verify.oauth2.grant_types.grants.jwt_bearer import JWTBearerMixin
+from ibm_verify.oauth2.grant_types.grants.password import PasswordGrantMixin
+from ibm_verify.oauth2.grant_types.grants.refresh_token import RefreshTokenMixin
+from ibm_verify.oauth2.grant_types.grants.token_exchange import TokenExchangeMixin
+from ibm_verify.oauth2.grant_types.utils import (
     build_authorization_url,
     generate_client_assertion_jwt,
     generate_jwt_bearer_assertion,

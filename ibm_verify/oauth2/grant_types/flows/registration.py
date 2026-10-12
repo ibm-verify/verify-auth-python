@@ -22,14 +22,14 @@ from typing import Any, Optional
 
 import httpx
 
-from oauth2.core.errors.errors import VerifyError
-from oauth2.grant_types.constants import DEFAULT_REGISTRATION_PATH
+from ibm_verify.oauth2.core.errors.errors import VerifyError
+from ibm_verify.oauth2.grant_types.constants import DEFAULT_REGISTRATION_PATH
 
 
 class DcrMixin:
     """Mixin that adds Dynamic Client Registration (RFC 7591 / RFC 7592).
 
-    Requires :class:`~oauth2.grant_types.base.OAuthBase` in the MRO.
+    Requires :class:`~ibm_verify.oauth2.grant_types.base.OAuthBase` in the MRO.
     """
 
     # ── Endpoint resolver ─────────────────────────────────────────────────────
@@ -72,7 +72,7 @@ class DcrMixin:
             ``registration_access_token``, and ``registration_client_uri``.
 
         Raises:
-            :class:`~oauth2.core.errors.errors.VerifyError`:
+            :class:`~ibm_verify.oauth2.core.errors.errors.VerifyError`:
                 On HTTP error or network failure.
         """
         endpoint = self._resolve_registration_endpoint(registration_endpoint)
@@ -118,7 +118,7 @@ class DcrMixin:
             Current client metadata dict.
 
         Raises:
-            :class:`~oauth2.core.errors.errors.VerifyError`:
+            :class:`~ibm_verify.oauth2.core.errors.errors.VerifyError`:
                 On HTTP error or network failure.
         """
         try:
@@ -159,7 +159,7 @@ class DcrMixin:
             Updated client metadata dict.
 
         Raises:
-            :class:`~oauth2.core.errors.errors.VerifyError`:
+            :class:`~ibm_verify.oauth2.core.errors.errors.VerifyError`:
                 On HTTP error or network failure.
         """
         try:
@@ -200,7 +200,7 @@ class DcrMixin:
             ``None`` on success (HTTP 204).
 
         Raises:
-            :class:`~oauth2.core.errors.errors.VerifyError`:
+            :class:`~ibm_verify.oauth2.core.errors.errors.VerifyError`:
                 On HTTP error or network failure.
         """
         try:
