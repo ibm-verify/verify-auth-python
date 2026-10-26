@@ -11,9 +11,12 @@ This script demonstrates the complete JWT bearer token flow:
 3. Print token details and test API calls
 """
 
-import os
 import json
+import os
+import sys
+
 from dotenv import load_dotenv
+
 from ibm_verify.oauth2.auth.client import OAuthClient
 
 # Load environment variables
@@ -65,10 +68,10 @@ def main():
         print("Set IBM_JWT_PRIVATE_KEY_PATH or place key at certs/private-key.pem")
         return
 
-    with open(key_path, "r") as f:
+    with open(key_path) as f:
         private_key = f.read()
 
-    print(f"\n✅ Configuration loaded:")
+    print("\n✅ Configuration loaded:")
     print(f"   Tenant:  {TENANT_URL}")
     print(f"   Client:  {CLIENT_ID}")
     print(f"   Subject: {JWT_SUBJECT}")
@@ -76,17 +79,20 @@ def main():
     print(f"   kid:     {JWT_KID}")
     print(f"   Key:     {key_path}")
 
-    # IBM Verify token endpoint used as JWT audience
-    oidc_token_endpoint = f"{TENANT_URL}/oauth2/token"
-    print(f"   Audience: {oidc_token_endpoint}")
-
-    # Initialize OAuthClient
+    # Initialize OAuthClient and resolve the token endpoint from discovery
     print("\n🔧 Step 1: Initialize OAuth Client")
     client = OAuthClient(base_url=TENANT_URL)
+    try:
+        client.load_discovery()
+    except Exception as e:  # noqa: BLE001 — fall back to the default path
+        print(f"   ⚠️  Discovery failed ({e}) — using the default token path")
+    # The token endpoint is also the JWT audience
+    oidc_token_endpoint = client._resolve_token_endpoint()
+    print(f"   Audience: {oidc_token_endpoint}")
 
     # Generate JWT Bearer assertion
     print("\n🔐 Step 2: Generate JWT Bearer Assertion")
-    print(f"   grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer")
+    print("   grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer")
     print(f"   alg: RS256  |  typ: JWT  |  kid: {JWT_KID}")
 
     try:
@@ -101,7 +107,7 @@ def main():
         print("   ✅ Assertion generated")
     except Exception as e:
         print(f"   ❌ Error generating assertion: {e}")
-        return
+        sys.exit(1)
 
     # Exchange assertion for access token
     # ── Optional: RAR payload (RFC 9396) ──────────────────────────────────────
@@ -130,7 +136,7 @@ def main():
         )
 
         access_token = token_response["access_token"]
-        print(f"   ✅ Token received!")
+        print("   ✅ Token received!")
         print(f"   Token Type  : {token_response.get('token_type')}")
         print(f"   Expires In  : {token_response.get('expires_in')} seconds")
         print(f"   Scope       : {token_response.get('scope')}")
@@ -139,12 +145,12 @@ def main():
 
     except Exception as e:
         print(f"   ❌ Error getting token: {e}")
-        return
+        sys.exit(1)
 
-    # Print complete token
-    print("\n📋 Step 4: Complete JWT Token")
+    # Show the token (truncated — avoid leaking full tokens into logs/recordings)
+    print("\n📋 Step 4: JWT Token")
     print("-" * 80)
-    print(access_token)
+    print(f"   {access_token[:40]}…{access_token[-12:]}  ({len(access_token)} chars)")
     print("-" * 80)
 
     # Decode token

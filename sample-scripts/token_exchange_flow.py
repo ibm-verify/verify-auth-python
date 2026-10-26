@@ -44,7 +44,7 @@ Environment variables (.env)
 -----------------------------
     IBM_VERIFY_TENANT_URL=https://your-tenant.verify.ibm.com
     IBM_VERIFY_OP_NAME=default
-    IBM_AUTHZ_HEADER=Bearer <admin-or-super-token>   # used for password grant
+    IBM_AUTHZ_HEADER=                                # optional — pre-encoded header; ignored when a client secret is set
 
     # Subject client (user token)
     IBM_USER_CLIENT_ID=your-user-client-id
@@ -73,10 +73,10 @@ Usage
     python sample-scripts/token_exchange_flow.py
 """
 
+import base64
+import json
 import os
 import sys
-import json
-import base64
 
 from dotenv import load_dotenv
 
@@ -178,7 +178,7 @@ def main() -> None:
     print(f"  OP name : {OP_NAME}")
     try:
         metadata = client.load_discovery(op_name=OP_NAME)
-        print(f"  ✅ Discovery loaded")
+        print("  ✅ Discovery loaded")
         print(f"     Token endpoint : {metadata.get('token_endpoint')}")
     except Exception as exc:
         print(f"  ⚠️  Discovery failed ({exc}) — using default paths")
@@ -282,7 +282,7 @@ def main() -> None:
             print("\n  Introspection response:")
             print(json.dumps(introspection, indent=4))
             if introspection.get("active"):
-                print(f"\n  ✅ Token is ACTIVE")
+                print("\n  ✅ Token is ACTIVE")
                 print(f"     sub       : {introspection.get('sub', 'n/a')}")
                 print(f"     client_id : {introspection.get('client_id', 'n/a')}")
                 print(f"     scope     : {introspection.get('scope', 'n/a')}")

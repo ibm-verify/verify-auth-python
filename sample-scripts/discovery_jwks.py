@@ -28,10 +28,10 @@ Usage
     python sample-scripts/test_discovery_jwks.py
 """
 
+import json
 import os
 import sys
-import json
-from typing import Dict, Any
+from typing import Any
 
 from dotenv import load_dotenv
 
@@ -68,7 +68,7 @@ def validate_config() -> None:
         print("❌  Missing required environment variable: IBM_VERIFY_TENANT_URL")
         print("\nCreate a .env file (see sample-scripts/.env.example) and re-run.")
         sys.exit(1)
-    
+
     if TENANT_URL and not TENANT_URL.startswith(("http://", "https://")):
         print("❌  IBM_VERIFY_TENANT_URL must start with https:// or http://")
         print(f"    Current value: {TENANT_URL}")
@@ -76,7 +76,7 @@ def validate_config() -> None:
         sys.exit(1)
 
 
-def print_json(data: Dict[str, Any], indent: int = 2) -> None:
+def print_json(data: dict[str, Any], indent: int = 2) -> None:
     """Pretty print JSON data."""
     print(json.dumps(data, indent=indent))
 
@@ -109,7 +109,7 @@ def main() -> None:
     # ══════════════════════════════════════════════════════════════════════════
 
     print_section("PART 1: OIDC Discovery Document")
-    
+
     print("\n  📡 Fetching OIDC discovery document...")
     print(f"     URL: {TENANT_URL}/oauth2/.well-known/openid-configuration")
 
@@ -221,7 +221,7 @@ def main() -> None:
         print_key_value("Key ID (kid)", key.get("kid"))
         print_key_value("Algorithm (alg)", key.get("alg"))
         print_key_value("Use", key.get("use"))
-        
+
         if key.get("kty") == "RSA":
             print_key_value("Modulus (n)", f"{key.get('n', '')[:40]}..." if key.get('n') else "N/A")
             print_key_value("Exponent (e)", key.get("e"))
@@ -252,11 +252,11 @@ def main() -> None:
     print("\n  📝 Example code:")
     print("""
     from authlib.jose import jwt, JsonWebKey
-    
+
     # Load JWKS
     jwks = client.get_jwks()
     key_set = JsonWebKey.import_key_set(jwks)
-    
+
     # Verify and decode JWT
     try:
         claims = jwt.decode(
@@ -310,8 +310,8 @@ def main() -> None:
     separator("Summary")
     print("\n  🎉 Discovery & JWKS test completed successfully!")
     print("\n  📊 Results:")
-    print(f"     • Discovery endpoint: ✅ Working")
-    print(f"     • JWKS endpoint: ✅ Working")
+    print("     • Discovery endpoint: ✅ Working")
+    print("     • JWKS endpoint: ✅ Working")
     print(f"     • Number of keys: {len(keys)}")
     print(f"     • Supported grant types: {len(grant_types)}")
     print(f"     • Supported auth methods: {len(auth_methods)}")

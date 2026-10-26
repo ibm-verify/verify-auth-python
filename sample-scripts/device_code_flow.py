@@ -48,9 +48,9 @@ Usage
     python sample-scripts/test_device_code_flow.py
 """
 
+import json
 import os
 import sys
-import json
 import webbrowser
 
 from dotenv import load_dotenv
@@ -136,12 +136,12 @@ def display_user_instructions(device_data: dict) -> None:
 
     if verification_uri_complete:
         short = (verification_uri_complete[:54] + "…") if len(verification_uri_complete) > 55 else verification_uri_complete
-        print(f"  │  OR visit the pre-filled URL:                            │")
+        print("  │  OR visit the pre-filled URL:                            │")
         print(f"  │     {short:<56}│")
-        print(f"  │                                                          │")
+        print("  │                                                          │")
 
     print(f"  │  Code expires in {expires_in}s  •  polling every {interval}s              │")
-    print(f"  └──────────────────────────────────────────────────────────┘")
+    print("  └──────────────────────────────────────────────────────────┘")
 
     # Optionally open the browser
     open_browser = input("\n  Open browser automatically? [Y/n]: ").strip().lower()
@@ -165,13 +165,13 @@ def main() -> None:
     print(f"  OP name : {OP_NAME}")
     try:
         metadata = client.load_discovery(op_name=OP_NAME)
-        print(f"  ✅ Discovery loaded")
+        print("  ✅ Discovery loaded")
         print(f"     Token endpoint             : {metadata.get('token_endpoint')}")
         device_ep = metadata.get("device_authorization_endpoint")
         if device_ep:
             print(f"     Device authorization endpoint: {device_ep}")
         else:
-            print(f"     Device authorization endpoint: (not in discovery — using default)")
+            print("     Device authorization endpoint: (not in discovery — using default)")
     except Exception as exc:
         print(f"  ⚠️  Discovery failed ({exc}) — falling back to default paths")
 
@@ -263,7 +263,7 @@ def main() -> None:
             print("\n  Introspection response:")
             print(json.dumps(introspection, indent=4))
             if introspection.get("active"):
-                print(f"\n  ✅ Token is ACTIVE")
+                print("\n  ✅ Token is ACTIVE")
                 print(f"     Subject  : {introspection.get('sub', 'n/a')}")
                 print(f"     Username : {introspection.get('username', 'n/a')}")
                 print(f"     Scope    : {introspection.get('scope', 'n/a')}")

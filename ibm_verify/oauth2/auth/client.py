@@ -15,6 +15,7 @@ and OAuth 2.0 operations.  It composes every mixin into one coherent class::
 
 from ibm_verify.oauth2.grant_types.base import OAuthBase
 from ibm_verify.oauth2.grant_types.flows.discovery import DiscoveryMixin
+from ibm_verify.oauth2.grant_types.flows.dpop import DPoPMixin
 from ibm_verify.oauth2.grant_types.flows.introspection import IntrospectMixin
 from ibm_verify.oauth2.grant_types.flows.registration import DcrMixin
 from ibm_verify.oauth2.grant_types.grants.authorization_code import AuthorizationCodeMixin
@@ -29,6 +30,7 @@ from ibm_verify.oauth2.grant_types.grants.token_exchange import TokenExchangeMix
 class OAuthClient(
     DiscoveryMixin,
     IntrospectMixin,
+    DPoPMixin,
     PasswordGrantMixin,
     ClientCredentialsMixin,
     TokenExchangeMixin,

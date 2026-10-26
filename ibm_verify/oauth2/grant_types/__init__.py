@@ -8,10 +8,12 @@ Provides a modular OAuth 2.0 / OIDC client for IBM Verify:
     ibm_verify/oauth2/grant_types/
     ├── constants.py               — URL paths and grant-type URNs
     ├── utils.py                   — PKCE helpers, JWT assertion builders
+    ├── dpop.py                    — DPoP key/proof/verification helpers (RFC 9449)
     ├── base.py                    — OAuthBase: shared httpx client + endpoint resolvers
     ├── flows/
     │   ├── discovery.py           — DiscoveryMixin: load_discovery, get_jwks
     │   ├── introspection.py       — IntrospectMixin: introspect_token
+    │   ├── dpop.py                — DPoPMixin: DPoP helpers, introspect_dpop_token
     │   └── registration.py        — DcrMixin: Dynamic Client Registration (RFC 7591/7592)
     └── grants/
         ├── password.py            — PasswordGrantMixin
@@ -35,6 +37,8 @@ from ibm_verify.oauth2.grant_types.constants import (
     DEFAULT_INTROSPECT_PATH,
     DEFAULT_REGISTRATION_PATH,
     DEFAULT_TOKEN_PATH,
+    DPOP_HEADER,
+    DPOP_JWT_TYPE,
     GRANT_AUTHORIZATION_CODE,
     GRANT_CLIENT_CREDENTIALS,
     GRANT_DEVICE_CODE,
@@ -47,11 +51,22 @@ from ibm_verify.oauth2.grant_types.constants import (
     JWT_DEFAULT_ALGORITHM,
     PKCE_CHALLENGE_METHOD,
     TOKEN_TYPE_ACCESS_TOKEN,
+    TOKEN_TYPE_DPOP,
     TOKEN_TYPE_ID_TOKEN,
     TOKEN_TYPE_JWT,
     TOKEN_TYPE_REFRESH_TOKEN,
 )
+from ibm_verify.oauth2.grant_types.dpop import (
+    InMemoryDPoPReplayCache,
+    build_dpop_headers,
+    compute_ath,
+    compute_jkt,
+    generate_dpop_key_pair,
+    generate_dpop_proof,
+    verify_dpop_proof,
+)
 from ibm_verify.oauth2.grant_types.flows.discovery import DiscoveryMixin
+from ibm_verify.oauth2.grant_types.flows.dpop import DPoPMixin
 from ibm_verify.oauth2.grant_types.flows.introspection import IntrospectMixin
 from ibm_verify.oauth2.grant_types.flows.registration import DcrMixin
 from ibm_verify.oauth2.grant_types.grants.authorization_code import AuthorizationCodeMixin
@@ -74,6 +89,7 @@ __all__ = [
     # Mixins
     "DcrMixin",
     "DiscoveryMixin",
+    "DPoPMixin",
     "IntrospectMixin",
     "PasswordGrantMixin",
     "ClientCredentialsMixin",
@@ -87,6 +103,13 @@ __all__ = [
     "build_authorization_url",
     "generate_client_assertion_jwt",
     "generate_jwt_bearer_assertion",
+    "generate_dpop_key_pair",
+    "generate_dpop_proof",
+    "build_dpop_headers",
+    "verify_dpop_proof",
+    "compute_jkt",
+    "compute_ath",
+    "InMemoryDPoPReplayCache",
     # Constants
     "DEFAULT_TOKEN_PATH",
     "DEFAULT_INTROSPECT_PATH",
@@ -104,6 +127,9 @@ __all__ = [
     "TOKEN_TYPE_REFRESH_TOKEN",
     "TOKEN_TYPE_ID_TOKEN",
     "TOKEN_TYPE_JWT",
+    "TOKEN_TYPE_DPOP",
+    "DPOP_HEADER",
+    "DPOP_JWT_TYPE",
     "DEFAULT_REGISTRATION_PATH",
     "PKCE_CHALLENGE_METHOD",
     "JWT_DEFAULT_ALGORITHM",

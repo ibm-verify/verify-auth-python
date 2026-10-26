@@ -7,11 +7,8 @@ IBM Verify OAuth — Token Exchange Grant (RFC 8693).
 import json
 from typing import Any, Optional
 
-import httpx
-from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.httpx_client import OAuth2Client
 
-from ibm_verify.oauth2.core.errors.errors import VerifyError
 from ibm_verify.oauth2.grant_types.constants import (
     GRANT_TOKEN_EXCHANGE,
     TOKEN_TYPE_ACCESS_TOKEN,
@@ -35,6 +32,9 @@ class TokenExchangeMixin:
         actor_token_type: str = TOKEN_TYPE_ACCESS_TOKEN,
         authorization_details: Optional[Any] = None,
         extra_params: Optional[dict[str, Any]] = None,
+        dpop_private_key: Optional[str] = None,
+        dpop_nonce: Optional[str] = None,
+        dpop_algorithm: Optional[str] = None,
     ) -> dict[str, Any]:
         """Exchange one set of tokens for another (RFC 8693).
 
@@ -49,6 +49,10 @@ class TokenExchangeMixin:
             authorization_details: Rich authorization request object (RAR, RFC 9396).
                 Encoded as a JSON string in the token request body.
             extra_params: Additional parameters to include in the token request body.
+            dpop_private_key: PEM private key. When set, a DPoP proof (RFC 9449) is sent
+                in the ``DPoP`` header and a DPoP-bound token is requested.
+            dpop_nonce: Server-provided ``DPoP-Nonce`` (normally handled automatically).
+            dpop_algorithm: Proof JWS algorithm (default inferred from the key).
 
         Returns:
             Token response dict with the exchanged ``access_token``.
@@ -71,28 +75,18 @@ class TokenExchangeMixin:
             token_endpoint=endpoint,
             timeout=self.timeout,  # type: ignore[attr-defined]
             verify=self.verify_ssl,  # type: ignore[attr-defined]
+            cert=self._get_cert_param(),  # type: ignore[attr-defined]
         )
-        try:
-            token = client.fetch_token(
-                url=endpoint,
-                grant_type=GRANT_TOKEN_EXCHANGE,
-                subject_token=subject_token,
-                subject_token_type=subject_token_type,
-                actor_token=actor_token,
-                actor_token_type=actor_token_type,
-                **extra,
-            )
-        except AuthlibBaseError as exc:
-            raise VerifyError(
-                message=str(exc),
-                error=exc.error,
-                error_description=exc.description or "",
-            ) from exc
-        except httpx.HTTPStatusError as exc:
-            raise VerifyError(
-                message=str(exc),
-                status_code=exc.response.status_code,
-            ) from exc
-        except httpx.RequestError as exc:
-            raise VerifyError(message=str(exc)) from exc
-        return dict(token)
+        return self._fetch_token(  # type: ignore[attr-defined,no-any-return]
+            client,
+            endpoint,
+            dpop_private_key=dpop_private_key,
+            dpop_nonce=dpop_nonce,
+            dpop_algorithm=dpop_algorithm,
+            grant_type=GRANT_TOKEN_EXCHANGE,
+            subject_token=subject_token,
+            subject_token_type=subject_token_type,
+            actor_token=actor_token,
+            actor_token_type=actor_token_type,
+            **extra,
+        )

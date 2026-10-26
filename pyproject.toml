@@ -81,9 +81,11 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+"sample-scripts/*" = ["E402"]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
+explicit_package_bases = true
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -96,10 +98,20 @@ warn_no_return = true
 strict_equality = true
 
 [[tool.mypy.overrides]]
-module = "tests.*"
+module = "authlib.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "test.*"
 disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+no_implicit_optional = false
+warn_return_any = false
+warn_no_return = false
 
 [tool.pytest.ini_options]
+pythonpath = ["."]
 testpaths = ["test"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]

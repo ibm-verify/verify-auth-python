@@ -14,7 +14,7 @@ Demonstrates three grant types in sequence:
 Environment variables (sample-scripts/.env)
 -------------------------------------------
     IBM_VERIFY_TENANT_URL
-    IBM_AUTHZ_HEADER
+    IBM_AUTHZ_HEADER  (optional — pre-encoded header; ignored when a client secret is set)
     IBM_USER_CLIENT_ID / IBM_USER_CLIENT_SECRET / IBM_USERNAME / IBM_PASSWORD
     IBM_ACTOR_CLIENT_ID / IBM_ACTOR_CLIENT_SECRET
     IBM_EXCHANGE_CLIENT_ID / IBM_EXCHANGE_CLIENT_SECRET
@@ -27,6 +27,7 @@ Usage
 
 import os
 import sys
+
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))

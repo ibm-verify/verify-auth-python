@@ -11,6 +11,10 @@ from typing import Any, Callable, Optional
 import httpx
 
 from ibm_verify.oauth2.core.errors.errors import VerifyError
+from ibm_verify.oauth2.grant_types.dpop import (
+    build_token_request_dpop_header,
+    warn_if_not_dpop_token,
+)
 
 
 class DeviceCodeMixin:
@@ -87,7 +91,14 @@ class DeviceCodeMixin:
             ) from exc
         except httpx.RequestError as exc:
             raise VerifyError(message=str(exc)) from exc
-        return response.json()
+        try:
+            device_data: dict[str, Any] = response.json()
+        except ValueError as exc:
+            raise VerifyError(
+                message=f"Device authorization failed: non-JSON response ({exc})",
+                status_code=response.status_code,
+            ) from exc
+        return device_data
 
     def poll_device_token(
         self,
@@ -98,6 +109,9 @@ class DeviceCodeMixin:
         client_secret: Optional[str] = None,
         token_endpoint: Optional[str] = None,
         extra_params: Optional[dict[str, Any]] = None,
+        dpop_private_key: Optional[str] = None,
+        dpop_nonce: Optional[str] = None,
+        dpop_algorithm: Optional[str] = None,
     ) -> dict[str, Any]:
         """Poll for a token until the user approves — Step 2 of Device flow (RFC 8628).
 
@@ -111,6 +125,10 @@ class DeviceCodeMixin:
             client_secret: Client secret for confidential clients.
             token_endpoint: Optional token endpoint override.
             extra_params: Additional parameters to include in the token request body.
+            dpop_private_key: PEM private key. When set, every poll carries a fresh DPoP
+                proof and a DPoP-bound token is requested.
+            dpop_nonce: Server-provided ``DPoP-Nonce`` (normally handled automatically).
+            dpop_algorithm: Proof JWS algorithm (default inferred from the key).
 
         Returns:
             Token response dict (``access_token``, ``id_token``, ``expires_in``, etc.).
@@ -136,22 +154,53 @@ class DeviceCodeMixin:
         if extra_params:
             data.update(extra_params)
 
+        nonce = dpop_nonce or (
+            self.get_dpop_nonce(endpoint) if dpop_private_key else None  # type: ignore[attr-defined]
+        )
         while time.time() < deadline:
+            request_headers = dict(headers)
+            if dpop_private_key:
+                request_headers.update(
+                    build_token_request_dpop_header(
+                        dpop_private_key, endpoint, nonce=nonce, algorithm=dpop_algorithm
+                    )
+                )
             try:
                 response = self._http_client.post(  # type: ignore[attr-defined]
-                    endpoint, data=data, headers=headers
+                    endpoint, data=data, headers=request_headers
                 )
             except httpx.RequestError as exc:
                 raise VerifyError(message=str(exc)) from exc
 
-            result = response.json()
+            server_nonce = self._remember_dpop_nonce(  # type: ignore[attr-defined]
+                endpoint, response.headers
+            )
+            try:
+                result = response.json()
+            except ValueError as exc:
+                raise VerifyError(
+                    message=f"Device token polling failed: non-JSON response ({exc})",
+                    status_code=response.status_code,
+                ) from exc
+            if not isinstance(result, dict):
+                result = {}
 
             if "access_token" in result:
+                if dpop_private_key:
+                    warn_if_not_dpop_token(result)
                 return dict(result)
 
             error = result.get("error", "")
             description = result.get("error_description", "no description")
 
+            if (
+                error == "use_dpop_nonce"
+                and dpop_private_key
+                and server_nonce
+                and server_nonce != nonce
+            ):
+                nonce = server_nonce
+                continue
             if error == "authorization_pending":
                 time.sleep(poll_interval)
                 continue
@@ -173,8 +222,10 @@ class DeviceCodeMixin:
             else:
                 raise VerifyError(
                     message=f"Device token polling failed: {error} — {description}",
+                    status_code=response.status_code,
                     error=error,
                     error_description=description,
+                    dpop_nonce=server_nonce,
                 )
 
         raise VerifyError(
@@ -192,6 +243,8 @@ class DeviceCodeMixin:
         on_user_code: Optional[Callable[[dict[str, Any]], None]] = None,
         authorization_details: Optional[Any] = None,
         extra_params: Optional[dict[str, Any]] = None,
+        dpop_private_key: Optional[str] = None,
+        dpop_algorithm: Optional[str] = None,
     ) -> dict[str, Any]:
         """Run the complete Device Authorization flow (RFC 8628).
 
@@ -211,6 +264,9 @@ class DeviceCodeMixin:
                 Passed through to :meth:`request_device_code`.
             extra_params: Additional parameters passed through to both
                 :meth:`request_device_code` and :meth:`poll_device_token`.
+            dpop_private_key: PEM private key for a DPoP-bound token (see
+                :meth:`poll_device_token`).
+            dpop_algorithm: Proof JWS algorithm (default inferred from the key).
 
         Returns:
             Token response dict (``access_token``, ``id_token``, etc.).
@@ -235,4 +291,6 @@ class DeviceCodeMixin:
             client_secret=client_secret,
             token_endpoint=token_endpoint,
             extra_params=extra_params,
+            dpop_private_key=dpop_private_key,
+            dpop_algorithm=dpop_algorithm,
         )

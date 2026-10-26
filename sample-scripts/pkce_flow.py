@@ -57,13 +57,13 @@ Usage
     python sample-scripts/test_pkce_flow.py
 """
 
+import json
 import os
 import sys
-import json
 import webbrowser
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
+from urllib.parse import parse_qs, urlparse
 
 from dotenv import load_dotenv
 
@@ -126,7 +126,7 @@ def validate_config() -> None:
             print(f"    • {var}")
         print("\nCreate a .env file (see sample-scripts/.env.example) and re-run.")
         sys.exit(1)
-    
+
     # Validate that TENANT_URL has a protocol
     if TENANT_URL and not TENANT_URL.startswith(("http://", "https://")):
         print("❌  IBM_VERIFY_TENANT_URL must start with https:// or http://")
@@ -146,14 +146,14 @@ class _CallbackHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         global _callback_result
-        
+
         # Log the incoming request for debugging
         print(f"\n  📥 Received request: {self.path}")
-        
+
         parsed = urlparse(self.path)
         print(f"     Path: {parsed.path}")
         print(f"     Query: {parsed.query}")
-        
+
         # Check if this is the callback path
         if parsed.path != CALLBACK_PATH:
             print(f"  ⚠️  Path mismatch! Expected: {CALLBACK_PATH}, Got: {parsed.path}")
@@ -168,8 +168,8 @@ class _CallbackHandler(BaseHTTPRequestHandler):
         _callback_result["code"]  = params.get("code",  [None])[0]
         _callback_result["state"] = params.get("state", [None])[0]
         _callback_result["error"] = params.get("error", [None])[0]
-        
-        print(f"  ✅ Callback received!")
+
+        print("  ✅ Callback received!")
         code = _callback_result.get("code")
         if code:
             print(f"     Code: {code[:20]}...")
@@ -197,11 +197,10 @@ class _CallbackHandler(BaseHTTPRequestHandler):
 
 def _start_callback_server() -> HTTPServer:
     """Start the callback server and ensure it's ready to accept connections."""
-    import socket
-    
+
     # Allow address reuse to avoid "Address already in use" errors
     HTTPServer.allow_reuse_address = True
-    
+
     try:
         server = HTTPServer((CALLBACK_HOST, CALLBACK_PORT), _CallbackHandler)
     except OSError as e:
@@ -209,9 +208,9 @@ def _start_callback_server() -> HTTPServer:
             print(f"\n  ❌ Port {CALLBACK_PORT} is already in use.")
             print(f"     Kill any process using port {CALLBACK_PORT} and try again:")
             print(f"     lsof -ti:{CALLBACK_PORT} | xargs kill -9")
-            print(f"     OR change IBM_PKCE_REDIRECT_URI in .env to use a different port\n")
+            print("     OR change IBM_PKCE_REDIRECT_URI in .env to use a different port\n")
         raise
-    
+
     # Use serve_forever in a thread so it can handle the request properly
     thread = Thread(target=lambda: server.serve_forever(), daemon=True)
     thread.start()
@@ -235,7 +234,7 @@ def main() -> None:
     print(f"  OP name : {OP_NAME}")
     try:
         metadata = client.load_discovery(op_name=OP_NAME)
-        print(f"  ✅ Discovery loaded")
+        print("  ✅ Discovery loaded")
         print(f"     Authorization endpoint : {metadata.get('authorization_endpoint')}")
         print(f"     Token endpoint         : {metadata.get('token_endpoint')}")
     except Exception as exc:
@@ -246,7 +245,7 @@ def main() -> None:
     code_verifier, code_challenge = OAuthClient.generate_pkce_pair()
     print(f"  code_verifier  : {code_verifier[:40]}...  ({len(code_verifier)} chars)")
     print(f"  code_challenge : {code_challenge[:40]}...  ({len(code_challenge)} chars)")
-    print(f"  method         : S256")
+    print("  method         : S256")
 
     # ── Step 2 — Build authorization URL ─────────────────────────────────────
     separator("STEP 2 — Build Authorization URL")
@@ -276,14 +275,14 @@ def main() -> None:
     # ── Step 3 — Wait for callback ────────────────────────────────────────────
     separator("STEP 3 — Waiting for IBM Verify Callback")
     print("  ⏳ Waiting for redirect to", REDIRECT_URI, "...")
-    
+
     # Wait for the callback - the thread will handle the request
     import time
     timeout = 120  # 2 minutes timeout
     start_time = time.time()
     while not _callback_result and (time.time() - start_time) < timeout:
         time.sleep(0.5)
-    
+
     # Shutdown the server gracefully
     server.shutdown()
     server.server_close()
@@ -306,7 +305,7 @@ def main() -> None:
     print(f"  client_secret: {'(set)' if CLIENT_SECRET else '(not set)'}")
     print(f"  redirect_uri : {REDIRECT_URI}")
     print(f"  code_verifier: {code_verifier[:30]}...")
-    
+
     # Get the token endpoint being used
     metadata = client.get_discovery(op_name=OP_NAME)
     token_endpoint = metadata.get('token_endpoint')
@@ -328,12 +327,12 @@ def main() -> None:
         sys.exit(1)
     except Exception as exc:
         print(f"\n  ❌ Unexpected error: {exc}")
-        print(f"\n  💡 Troubleshooting:")
-        print(f"     1. Check IBM Verify application 'Client authentication method'")
-        print(f"     2. If set to 'None', the client is public (no secret needed)")
-        print(f"     3. If set to 'Client secret (post)' or 'Default', you need a secret")
-        print(f"     4. Generate a secret in IBM Verify and add to .env as:")
-        print(f"        IBM_PKCE_CLIENT_SECRET=your-secret-here")
+        print("\n  💡 Troubleshooting:")
+        print("     1. Check IBM Verify application 'Client authentication method'")
+        print("     2. If set to 'None', the client is public (no secret needed)")
+        print("     3. If set to 'Client secret (post)' or 'Default', you need a secret")
+        print("     4. Generate a secret in IBM Verify and add to .env as:")
+        print("        IBM_PKCE_CLIENT_SECRET=your-secret-here")
         sys.exit(1)
 
     print("\n  ✅ Tokens received!")
@@ -363,7 +362,7 @@ def main() -> None:
             print("\n  Introspection response:")
             print(json.dumps(introspection, indent=4))
             if introspection.get("active"):
-                print(f"\n  ✅ Token is ACTIVE")
+                print("\n  ✅ Token is ACTIVE")
                 print(f"     Subject  : {introspection.get('sub', 'n/a')}")
                 print(f"     Username : {introspection.get('username', 'n/a')}")
                 print(f"     Scope    : {introspection.get('scope', 'n/a')}")

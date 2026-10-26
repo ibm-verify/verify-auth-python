@@ -15,6 +15,8 @@ class VerifyError(Exception):
         status_code: HTTP status code, if the error originated from an HTTP response.
         error: OAuth error code (e.g. ``invalid_client``).
         error_description: Human-readable OAuth error description.
+        dpop_nonce: ``DPoP-Nonce`` response header value, when the server sent one
+            (e.g. with ``error="use_dpop_nonce"``). Pass it back as ``dpop_nonce=``.
     """
 
     def __init__(
@@ -23,12 +25,14 @@ class VerifyError(Exception):
         status_code: Optional[int] = None,
         error: Optional[str] = None,
         error_description: Optional[str] = None,
+        dpop_nonce: Optional[str] = None,
     ) -> None:
         super().__init__(message)
         self.message = message
         self.status_code = status_code
         self.error = error
         self.error_description = error_description
+        self.dpop_nonce = dpop_nonce
 
     def __str__(self) -> str:
         if self.status_code is None and self.error is None and self.error_description is None:

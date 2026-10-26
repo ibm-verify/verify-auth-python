@@ -97,7 +97,7 @@ class DcrMixin:
         except httpx.RequestError as exc:
             raise VerifyError(message=f"DCR register failed: {exc}") from exc
 
-        return response.json()
+        return dict(response.json())
 
     # ── RFC 7592 — read ───────────────────────────────────────────────────────
 
@@ -136,7 +136,7 @@ class DcrMixin:
         except httpx.RequestError as exc:
             raise VerifyError(message=f"DCR read failed: {exc}") from exc
 
-        return response.json()
+        return dict(response.json())
 
     # ── RFC 7592 — update ─────────────────────────────────────────────────────
 
@@ -181,7 +181,7 @@ class DcrMixin:
         except httpx.RequestError as exc:
             raise VerifyError(message=f"DCR update failed: {exc}") from exc
 
-        return response.json()
+        return dict(response.json())
 
     # ── RFC 7592 — delete ─────────────────────────────────────────────────────
 

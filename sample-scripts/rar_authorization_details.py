@@ -34,7 +34,7 @@ Environment variables (from sample-scripts/.env)
     IBM_VERIFY_OP_NAME      — OIDC provider name (default: "default")
     IBM_ACTOR_CLIENT_ID     — client ID for client_credentials grant
     IBM_ACTOR_CLIENT_SECRET — client secret
-    IBM_AUTHZ_HEADER        — Authorization header value (Bearer ...)
+    IBM_AUTHZ_HEADER        — optional — pre-encoded header; ignored when a client secret is set
 """
 
 import json
@@ -46,7 +46,9 @@ from dotenv import load_dotenv
 # Load from sample-scripts/.env (when run from project root: python sample-scripts/...)
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
-from ibm_verify.oauth2.auth.client import OAuthClient  # noqa: E402  # pylint: disable=wrong-import-position
+from ibm_verify.oauth2.auth.client import (
+    OAuthClient,  # noqa: E402  # pylint: disable=wrong-import-position
+)
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 TENANT_URL    = os.getenv("IBM_VERIFY_TENANT_URL", "").rstrip("/")
@@ -69,7 +71,6 @@ def validate_config() -> None:
             ("IBM_VERIFY_TENANT_URL", TENANT_URL),
             ("IBM_ACTOR_CLIENT_ID", CLIENT_ID),
             ("IBM_ACTOR_CLIENT_SECRET", CLIENT_SECRET),
-            ("IBM_AUTHZ_HEADER", AUTHZ_HEADER),
         ] if not k
     ]
     if missing:
@@ -114,14 +115,14 @@ def level1_echo(client: OAuthClient) -> bool:
         token = get_token(client, payload)
     except Exception as exc:
         print(f"  ❌ Token request failed: {exc}")
-        print("     Cannot proceed — check CLIENT_ID / CLIENT_SECRET / AUTHZ_HEADER.")
+        print("     Cannot proceed — check IBM_ACTOR_CLIENT_ID / IBM_ACTOR_CLIENT_SECRET.")
         return False
 
     print(f"\n  Full token response keys: {list(token.keys())}")
 
     if "authorization_details" in token:
         echoed = token["authorization_details"]
-        print(f"\n  ✅ PASS — authorization_details echoed back:")
+        print("\n  ✅ PASS — authorization_details echoed back:")
         print(f"     {json.dumps(echoed, indent=4)}")
         return True
     else:
