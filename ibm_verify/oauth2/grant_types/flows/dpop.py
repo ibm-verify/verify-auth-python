@@ -5,7 +5,7 @@ IBM Verify OAuth — DPoP support (RFC 9449).
 
 DPoP is not a separate grant: pass ``dpop_private_key`` to
 ``client_credentials()``, ``exchange_code_for_token()`` or ``refresh_access_token()``
-to obtain a DPoP-bound token.  This mixin exposes the key/proof helpers and the
+to obtain a DPoP-bound token.  This mixin exposes the key or proof helpers and the
 introspection check used with such tokens.
 """
 

@@ -400,14 +400,14 @@ def show_claims(label: str, token: Any) -> None:
 def hint(exc: VerifyError) -> None:
     text = f"{exc.error or ''} {exc.error_description or ''} {exc.message}"
     tips = {
-        "CSIAQ0330E": "this app accepts only client_secret_post — pass client_secret_post=True",
-        "invalid_client": "check client id/secret, or for private_key_jwt the registered key, kid and aud",
-        "unauthorized_client": "enable this grant type on the application (Sign-on tab)",
-        "invalid_dpop_proof": "proof alg must match the app's 'Signing algorithm for DPoP JWT'",
-        "requires a DPoP proof": "this app enforces DPoP — set IBM_PKJWT_DPOP=true (or turn DPoP off on the app)",
-        "use_dpop_nonce": "the tenant kept demanding a new nonce; retry once more",
-        "invalid_grant": "code/refresh token expired or already used, or wrong user",
-        "invalid_scope": "request only scopes enabled on the application",
+        "CSIAQ0330E": "the IBM Verify application is configured to accept only client_secret_post — pass client_secret_post=True to the SDK call",
+        "invalid_client": "check the client ID or secret, or for private_key_jwt verify the registered key, key ID, and audience",
+        "unauthorized_client": "enable this grant type on the IBM Verify application (Sign-on tab)",
+        "invalid_dpop_proof": "proof algorithm must match the IBM Verify application's 'Signing algorithm for DPoP JWT'",
+        "requires a DPoP proof": "the IBM Verify application enforces DPoP — set IBM_PKJWT_DPOP=true (or disable DPoP on the IBM Verify application)",
+        "use_dpop_nonce": "the server kept returning a new nonce; retry the request once more",
+        "invalid_grant": "authorization code or refresh token has expired or was already used, or the user is incorrect",
+        "invalid_scope": "request only the scopes enabled on the IBM Verify application",
         "CSIAQ5223E": "IBM_JWT_SUBJECT must be the login username, not the internal UID",
     }
     for key, tip in tips.items():

@@ -13,10 +13,10 @@ class VerifyError(Exception):
     Args:
         message: Human-readable description of the error.
         status_code: HTTP status code, if the error originated from an HTTP response.
-        error: OAuth error code (e.g. ``invalid_client``).
+        error: OAuth error code (for example, ``invalid_client``).
         error_description: Human-readable OAuth error description.
         dpop_nonce: ``DPoP-Nonce`` response header value, when the server sent one
-            (e.g. with ``error="use_dpop_nonce"``). Pass it back as ``dpop_nonce=``.
+            (for example, with ``error="use_dpop_nonce"``). Pass it back as ``dpop_nonce=``.
     """
 
     def __init__(

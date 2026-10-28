@@ -184,7 +184,7 @@ token = client.client_credentials(
     client_id="YOUR_CLIENT_ID",              # required
     client_secret="YOUR_CLIENT_SECRET",      # optional — omit when using private_key_jwt
     scope="openid",                          # optional — space-separated scopes
-    authorization_header=None,               # optional — pre-encoded header, used only when no secret/assertion is given
+    authorization_header=None,               # optional — pre-encoded header, used only when no secret or assertion is given
     token_endpoint=None,                     # optional endpoint override
     authorization_details=None,              # optional — list/dict, JSON-encoded automatically (RFC 9396)
     extra_params=None,                       # optional — dict merged into the token request body
@@ -202,13 +202,13 @@ The SDK selects the authentication method for you based on what you provide: a `
 
 #### Authenticating without a client secret — private_key_jwt
 
-By default, your app proves its identity with a `client_secret` — a shared password that lives in config files and CI pipelines. **private_key_jwt** replaces that password with a short-lived, digitally signed token. Your app keeps a private key; IBM Verify stores only the matching public key. Nothing sensitive ever travels over the network.
+By default, your application proves its identity with a `client_secret` — a shared password that lives in configuration files and CI pipelines. **private_key_jwt** replaces that password with a short-lived, digitally signed token. Your application keeps a private key; IBM Verify stores only the matching public key. Nothing sensitive ever travels over the network.
 
 **One-time IBM Verify setup**
 
 Go to your application → **Sign-on** tab → set **Client authentication method** to *Private key JWT* → upload your certificate or provide a JWKS URI.
 
-**Using it in code**
+**Using private_key_jwt in code**
 
 ```python
 # Step 1 — build a signed, single-use token that proves who your app is.
@@ -220,7 +220,7 @@ assertion = OAuthClient.generate_client_assertion_jwt(
     key_id="my-key",          # label of the key you registered on IBM Verify
 )
 
-# Step 2 — use it instead of client_secret.
+# Step 2 — use the assertion instead of client_secret.
 token = client.client_credentials(
     client_id="YOUR_CLIENT_ID",
     scope="openid",
@@ -230,9 +230,9 @@ token = client.client_credentials(
 
 The same `client_assertion=` parameter works on `exchange_code_for_token()`, `refresh_access_token()`, `jwt_bearer_grant()`, and `introspect_token()` — no client secret anywhere in the chain.
 
-**Using it together with DPoP**
+**Using private_key_jwt together with DPoP**
 
-When DPoP is also enabled on the application, pass a function instead of a fixed string. The SDK may need to retry the request with a server nonce, and a function lets it generate a brand-new assertion for that retry:
+When DPoP is also enabled on the application, pass a function instead of a fixed string. The SDK may need to retry the request with a server-issued nonce (a one-time value returned by the server to prevent replay attacks), and a function lets it generate a brand-new assertion for that retry:
 
 ```python
 token = client.client_credentials(
@@ -496,7 +496,7 @@ headers = client.build_dpop_headers(
 from ibm_verify.oauth2.grant_types.dpop import InMemoryDPoPReplayCache
 
 # Create replay_cache once per process. For multi-instance deployments use a shared
-# store (e.g. Redis SET jti 1 NX EX <ttl>) implementing the same check_and_store() interface.
+# store (for example, Redis SET jti 1 NX EX <ttl>) implementing the same check_and_store() interface.
 replay_cache = InMemoryDPoPReplayCache()
 
 result = client.introspect_dpop_token(

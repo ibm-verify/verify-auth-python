@@ -179,9 +179,9 @@ class OAuthBase:
     ) -> dict[str, Any]:
         """POST to the token endpoint through ``oauth_client`` and return the token.
 
-        When ``dpop_private_key`` is set a fresh DPoP proof is attached.  The
-        nonce used is ``dpop_nonce`` or, if not given, the last ``DPoP-Nonce``
-        this server sent.  If the server answers ``use_dpop_nonce`` the request
+        When ``dpop_private_key`` is set, a fresh DPoP proof is attached.
+        Either ``dpop_nonce`` is used or, if not provided, the last ``DPoP-Nonce``
+        sent by the server is used.  If the server answers ``use_dpop_nonce`` the request
         is retried once with the nonce it supplied (RFC 9449 §8).  If
         ``params["client_assertion"]`` is a callable it is called for every attempt,
         so the retry carries a fresh ``private_key_jwt`` assertion.  Errors are
