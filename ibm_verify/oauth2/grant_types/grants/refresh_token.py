@@ -5,13 +5,10 @@ IBM Verify OAuth — Refresh Token Grant (RFC 6749 §6).
 """
 
 import json
-from typing import Any, Optional
+from typing import Any, Callable, Optional, Union
 
-import httpx
-from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.httpx_client import OAuth2Client
 
-from ibm_verify.oauth2.core.errors.errors import VerifyError
 from ibm_verify.oauth2.grant_types.constants import CLIENT_ASSERTION_TYPE_JWT
 
 
@@ -27,16 +24,21 @@ class RefreshTokenMixin:
         client_id: str,
         refresh_token: str,
         client_secret: Optional[str] = None,
-        client_assertion: Optional[str] = None,
+        client_assertion: Optional[Union[str, Callable[[], str]]] = None,
         client_assertion_type: Optional[str] = None,
         scope: Optional[str] = None,
         token_endpoint: Optional[str] = None,
         authorization_details: Optional[Any] = None,
         extra_params: Optional[dict[str, Any]] = None,
+        dpop_private_key: Optional[str] = None,
+        dpop_nonce: Optional[str] = None,
+        dpop_algorithm: Optional[str] = None,
+        client_secret_post: bool = False,
     ) -> dict[str, Any]:
         """Obtain a new access token from a refresh token (RFC 6749 §6).
 
-        Supports ``client_secret_post``, ``private_key_jwt``, and public clients.
+        Supports ``client_secret_basic`` (default), ``client_secret_post``,
+        ``private_key_jwt``, and public clients.
 
         Args:
             client_id: OAuth client ID.
@@ -44,12 +46,22 @@ class RefreshTokenMixin:
             client_secret: Client secret (confidential clients, ``client_secret_post``).
             client_assertion: JWT for ``private_key_jwt`` client authentication.
                 Generate with :func:`~ibm_verify.oauth2.grant_types.utils.generate_client_assertion_jwt`.
+                Also accepts a zero-argument callable returning a fresh assertion
+                (recommended with DPoP, so a nonce retry gets a new assertion).
             client_assertion_type: Assertion type URN (required with ``client_assertion``).
             scope: Optional scopes — must be a subset of the original grant.
             token_endpoint: Optional token endpoint override.
             authorization_details: Rich authorization request object (RAR, RFC 9396).
                 Encoded as a JSON string in the token request body.
             extra_params: Additional parameters to include in the token request body.
+            dpop_private_key: PEM private key. When set, a DPoP proof (RFC 9449) is sent
+                in the ``DPoP`` header. Use the same key the refresh token is bound to.
+            dpop_nonce: Server-provided ``DPoP-Nonce`` to embed in the proof. Usually not
+                needed: a ``use_dpop_nonce`` challenge is retried automatically.
+            dpop_algorithm: Proof JWS algorithm (default inferred from the key).
+            client_secret_post: Send ``client_secret`` in the body instead of HTTP Basic.
+                Required for IBM Verify applications that accept only
+                ``client_secret_post`` (error CSIAQ0330E otherwise).
 
         Returns:
             Token response dict (``access_token``, ``refresh_token``, ``expires_in``, etc.).
@@ -93,6 +105,9 @@ class RefreshTokenMixin:
                 timeout=self.timeout,  # type: ignore[attr-defined]
                 verify=self.verify_ssl,  # type: ignore[attr-defined]
                 cert=cert_param,
+                token_endpoint_auth_method=(
+                    "client_secret_post" if client_secret_post else "client_secret_basic"
+                ),
             )
         else:
             # Public client / tls_client_auth via mTLS
@@ -106,19 +121,11 @@ class RefreshTokenMixin:
             )
             token_params["client_id"] = client_id
 
-        try:
-            token = oauth_client.fetch_token(url=endpoint, **token_params)
-        except AuthlibBaseError as exc:
-            raise VerifyError(
-                message=str(exc),
-                error=exc.error,
-                error_description=exc.description or "",
-            ) from exc
-        except httpx.HTTPStatusError as exc:
-            raise VerifyError(
-                message=str(exc),
-                status_code=exc.response.status_code,
-            ) from exc
-        except httpx.RequestError as exc:
-            raise VerifyError(message=str(exc)) from exc
-        return dict(token)
+        return self._fetch_token(  # type: ignore[attr-defined,no-any-return]
+            oauth_client,
+            endpoint,
+            dpop_private_key=dpop_private_key,
+            dpop_nonce=dpop_nonce,
+            dpop_algorithm=dpop_algorithm,
+            **token_params,
+        )

@@ -5,13 +5,10 @@ IBM Verify OAuth — JWT Bearer Grant (RFC 7523).
 """
 
 import json
-from typing import Any, Optional
+from typing import Any, Callable, Optional, Union
 
-import httpx
-from authlib.common.errors import AuthlibBaseError
 from authlib.integrations.httpx_client import OAuth2Client
 
-from ibm_verify.oauth2.core.errors.errors import VerifyError
 from ibm_verify.oauth2.grant_types.constants import CLIENT_ASSERTION_TYPE_JWT, GRANT_JWT_BEARER
 from ibm_verify.oauth2.grant_types.utils import (
     generate_client_assertion_jwt,
@@ -38,10 +35,13 @@ class JWTBearerMixin:
         client_secret: Optional[str] = None,
         scope: Optional[str] = None,
         token_endpoint: Optional[str] = None,
-        client_assertion: Optional[str] = None,
+        client_assertion: Optional[Union[str, Callable[[], str]]] = None,
         client_assertion_type: str = CLIENT_ASSERTION_TYPE_JWT,
         authorization_details: Optional[Any] = None,
         extra_params: Optional[dict[str, Any]] = None,
+        dpop_private_key: Optional[str] = None,
+        dpop_nonce: Optional[str] = None,
+        dpop_algorithm: Optional[str] = None,
     ) -> dict[str, Any]:
         """Exchange a JWT assertion for an access token (RFC 7523 jwt-bearer grant).
 
@@ -59,10 +59,16 @@ class JWTBearerMixin:
             scope: Optional requested scopes (space-separated).
             token_endpoint: Optional explicit token endpoint URL.
             client_assertion: Signed JWT for ``private_key_jwt`` client authentication.
+                Also accepts a zero-argument callable returning a fresh assertion
+                (recommended with DPoP, so a nonce retry gets a new assertion).
             client_assertion_type: Assertion type URN for client auth JWT.
             authorization_details: Rich authorization request object (RAR, RFC 9396).
                 Encoded as a JSON string in the token request body.
             extra_params: Additional parameters to include in the token request body.
+            dpop_private_key: PEM private key. When set, a DPoP proof (RFC 9449) is sent
+                in the ``DPoP`` header and a DPoP-bound token is requested.
+            dpop_nonce: Server-provided ``DPoP-Nonce`` (normally handled automatically).
+            dpop_algorithm: Proof JWS algorithm (default inferred from the key).
 
         Returns:
             Token response dict (``access_token``, ``token_type``, ``expires_in``, etc.).
@@ -127,19 +133,11 @@ class JWTBearerMixin:
                 token_endpoint_auth_method="none",
             )
 
-        try:
-            token = oauth_client.fetch_token(url=endpoint, **body)
-        except AuthlibBaseError as exc:
-            raise VerifyError(
-                message=str(exc),
-                error=exc.error,
-                error_description=exc.description or "",
-            ) from exc
-        except httpx.HTTPStatusError as exc:
-            raise VerifyError(
-                message=str(exc),
-                status_code=exc.response.status_code,
-            ) from exc
-        except httpx.RequestError as exc:
-            raise VerifyError(message=str(exc)) from exc
-        return dict(token)
+        return self._fetch_token(  # type: ignore[attr-defined,no-any-return]
+            oauth_client,
+            endpoint,
+            dpop_private_key=dpop_private_key,
+            dpop_nonce=dpop_nonce,
+            dpop_algorithm=dpop_algorithm,
+            **body,
+        )

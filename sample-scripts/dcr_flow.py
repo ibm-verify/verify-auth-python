@@ -51,10 +51,9 @@ Usage
     python sample-scripts/dcr_flow.py
 """
 
-import json
 import os
 import sys
-from typing import Any, Dict, Optional
+from typing import Any
 
 from dotenv import load_dotenv
 
@@ -82,7 +81,7 @@ API_CLIENT_SECRET = os.getenv("IBM_CLIENT_SECRET", "")
 # NOTE: Some IBM Verify builds require redirect_uris even for
 # client_credentials-only clients.  If you get a 400, try adding:
 #   "redirect_uris": ["https://placeholder.example.com/callback"],
-CLIENT_METADATA: Dict[str, Any] = {
+CLIENT_METADATA: dict[str, Any] = {
     "client_name": "DCR Sample App",
     "grant_types": ["client_credentials"],
     "response_types": ["token"],
@@ -141,12 +140,12 @@ def fetch_iat(client: OAuthClient) -> str:
         )
     except VerifyError as exc:
         print(f"\n  ❌ Could not obtain IAT: {exc}")
-        print(f"\n  💡 Check IBM_CLIENT_ID and IBM_CLIENT_SECRET in your .env")
+        print("\n  💡 Check IBM_CLIENT_ID and IBM_CLIENT_SECRET in your .env")
         sys.exit(1)
     return str(token["access_token"])
 
 
-def display_client_info(info: Dict[str, Any], label: str = "Client") -> None:
+def display_client_info(info: dict[str, Any], label: str = "Client") -> None:
     """Print the most useful fields from a client info response."""
     print(f"\n  ✅ {label}")
     print(f"     client_id                : {info.get('client_id', 'N/A')}")
@@ -181,13 +180,13 @@ def main() -> None:
     print(f"  OP name : {OP_NAME}")
     try:
         metadata = client.load_discovery(op_name=OP_NAME)
-        print(f"  ✅ Discovery loaded")
+        print("  ✅ Discovery loaded")
         print(f"     Token endpoint        : {metadata.get('token_endpoint')}")
         reg_ep = metadata.get("registration_endpoint")
         if reg_ep:
             print(f"     Registration endpoint : {reg_ep}")
         else:
-            print(f"     Registration endpoint : (not in discovery — using SDK default)")
+            print("     Registration endpoint : (not in discovery — using SDK default)")
     except Exception as exc:
         print(f"  ⚠️  Discovery failed ({exc}) — falling back to default paths")
 
@@ -196,17 +195,17 @@ def main() -> None:
 
     # ── Step 0b — Mint a fresh IAT ───────────────────────────────────────────
     separator("STEP 0b — Obtain Initial Access Token")
-    print(f"  Fetching fresh IAT via client_credentials")
+    print("  Fetching fresh IAT via client_credentials")
     print(f"  API client_id : {API_CLIENT_ID}")
     iat = fetch_iat(client)
     print(f"  ✅ IAT obtained  : {iat[:20]}...")
 
     # ── Step 1 — Register a new client ───────────────────────────────────────
     separator("STEP 1 — Register Client  (RFC 7591 POST)")
-    print(f"  Metadata to register:")
+    print("  Metadata to register:")
     for k, v in CLIENT_METADATA.items():
         print(f"     {k:<34}: {v}")
-    print(f"\n  Sending POST to registration endpoint...")
+    print("\n  Sending POST to registration endpoint...")
 
     try:
         reg = client.register_client(
@@ -257,7 +256,7 @@ def main() -> None:
         sys.exit(1)
 
     display_client_info(info, "Current client metadata")
-    print(f"\n  Full response from server (all fields):")
+    print("\n  Full response from server (all fields):")
     for k, v in info.items():
         print(f"     {k}: {v}")
 
@@ -267,7 +266,7 @@ def main() -> None:
     # ── Step 3 — Update the client ────────────────────────────────────────────
     separator("STEP 3 — Update Client  (RFC 7592 PUT)")
     print(f"  Updating client_name to: '{UPDATED_CLIENT_NAME}'")
-    print(f"  (Full document PUT — all other fields preserved)")
+    print("  (Full document PUT — all other fields preserved)")
 
     # Build the updated document: take what the server returned, update the name.
     updated_metadata = {**info, "client_name": UPDATED_CLIENT_NAME}
@@ -285,7 +284,7 @@ def main() -> None:
     for field in SERVER_READONLY_FIELDS:
         updated_metadata.pop(field, None)
 
-    print(f"\n  Sending PUT body (fields):")
+    print("\n  Sending PUT body (fields):")
     for k, v in updated_metadata.items():
         print(f"     {k}: {v}")
 
@@ -316,12 +315,12 @@ def main() -> None:
 
     # ── Step 3b — Verify the registered client can actually get a token ───────
     separator("STEP 3b — Verify: use the new client to get a token")
-    print(f"  Attempting client_credentials with the just-registered client...")
+    print("  Attempting client_credentials with the just-registered client...")
     print(f"  client_id : {client_id}")
     reg_secret = reg.get("client_secret", "")
     if not reg_secret:
-        print(f"  ⚠️  No client_secret in registration response — skipping token test")
-        print(f"      (public clients or tls_client_auth clients have no secret)")
+        print("  ⚠️  No client_secret in registration response — skipping token test")
+        print("      (public clients or tls_client_auth clients have no secret)")
     else:
         import base64
         b64 = base64.b64encode(f"{client_id}:{reg_secret}".encode()).decode()
@@ -333,16 +332,16 @@ def main() -> None:
                 authorization_header=f"Basic {b64}",
             )
             at = str(new_token.get("access_token", ""))
-            print(f"\n  ✅ Token obtained using registered client!")
+            print("\n  ✅ Token obtained using registered client!")
             print(f"     access_token : {at[:40]}...")
             print(f"     token_type   : {new_token.get('token_type')}")
             print(f"     expires_in   : {new_token.get('expires_in')} s")
-            print(f"\n  ✅ DCR is working — a client registered dynamically")
-            print(f"     can authenticate and receive tokens from the tenant.")
+            print("\n  ✅ DCR is working — a client registered dynamically")
+            print("     can authenticate and receive tokens from the tenant.")
         except VerifyError as exc:
             print(f"\n  ❌ Token request with new client failed: {exc}")
-            print(f"     The client was registered but cannot authenticate yet.")
-            print(f"     💡 Check the grant types and scopes on the tenant.")
+            print("     The client was registered but cannot authenticate yet.")
+            print("     💡 Check the grant types and scopes on the tenant.")
 
     # ── Step 4 — Delete the client ────────────────────────────────────────────
     separator("STEP 4 — Delete Client  (RFC 7592 DELETE)")
@@ -370,11 +369,11 @@ def main() -> None:
         print(f"\n  ❌ Unexpected error: {exc}")
         sys.exit(1)
 
-    print(f"\n  ✅ Client deleted (HTTP 204)")
+    print("\n  ✅ Client deleted (HTTP 204)")
 
     # Verify deletion — a GET after DELETE should return 404
     separator("STEP 4b — Verify Deletion  (expect 404)")
-    print(f"  Attempting to read deleted client — expecting a 404...")
+    print("  Attempting to read deleted client — expecting a 404...")
     try:
         client.read_client(
             registration_access_token=rat,
@@ -383,7 +382,7 @@ def main() -> None:
         print("  ⚠️  Client still readable after deletion (unexpected)")
     except VerifyError as exc:
         if exc.status_code == 404:
-            print(f"  ✅ Got expected 404 — client is gone")
+            print("  ✅ Got expected 404 — client is gone")
         else:
             print(f"  ⚠️  Got {exc.status_code} instead of 404: {exc}")
 
@@ -400,12 +399,12 @@ def print_summary(
     separator("Summary")
     print("\n  🎉 DCR lifecycle completed!")
     print(f"\n  Step 1 — register_client → client_id : {client_id}")
-    print(f"  Step 2 — read_client     → metadata fetched ✅")
-    print(f"  Step 3 — update_client   → name updated ✅")
+    print("  Step 2 — read_client     → metadata fetched ✅")
+    print("  Step 3 — update_client   → name updated ✅")
     if deleted:
-        print(f"  Step 4 — delete_client   → client deleted ✅")
+        print("  Step 4 — delete_client   → client deleted ✅")
     else:
-        print(f"  Step 4 — delete_client   → skipped")
+        print("  Step 4 — delete_client   → skipped")
     print(f"\n  Registration Access Token (RAT) : {rat[:16]}...")
     print(f"  Registration Client URI  (RCU) : {rcu}")
     separator()

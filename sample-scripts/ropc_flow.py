@@ -55,7 +55,7 @@ Environment variables (.env)
     IBM_USER_CLIENT_SECRET=your-client-secret
     IBM_USERNAME=your-username
     IBM_PASSWORD=your-password
-    IBM_AUTHZ_HEADER=Bearer <admin-token>    # forwarded as Authorization header
+    IBM_AUTHZ_HEADER=                        # optional — pre-encoded header; ignored when a client secret is set
 
 Usage
 -----
@@ -63,9 +63,9 @@ Usage
     python sample-scripts/ropc_flow.py
 """
 
+import json
 import os
 import sys
-import json
 
 from dotenv import load_dotenv
 
@@ -163,7 +163,7 @@ def main() -> None:
     print(f"  OP name : {OP_NAME}")
     try:
         metadata = client.load_discovery(op_name=OP_NAME)
-        print(f"  ✅ Discovery loaded")
+        print("  ✅ Discovery loaded")
         print(f"     Token endpoint : {metadata.get('token_endpoint')}")
     except Exception as exc:
         print(f"  ⚠️  Discovery failed ({exc}) — using default paths")
@@ -218,7 +218,7 @@ def main() -> None:
             print("\n  Introspection response:")
             print(json.dumps(introspection, indent=4))
             if introspection.get("active"):
-                print(f"\n  ✅ Token is ACTIVE")
+                print("\n  ✅ Token is ACTIVE")
                 print(f"     sub      : {introspection.get('sub', 'n/a')}")
                 print(f"     username : {introspection.get('username', 'n/a')}")
                 print(f"     scope    : {introspection.get('scope', 'n/a')}")
@@ -251,9 +251,9 @@ def main() -> None:
                 old_at = str(token.get("access_token", ""))
                 new_at = str(refreshed.get("access_token", ""))
                 if old_at != new_at:
-                    print(f"\n  ✅ New access token is different from the original (expected)")
+                    print("\n  ✅ New access token is different from the original (expected)")
                 else:
-                    print(f"\n  ⚠️  Tokens are identical (check token lifetime settings)")
+                    print("\n  ⚠️  Tokens are identical (check token lifetime settings)")
             except VerifyError as exc:
                 print(f"\n  ❌ Refresh failed: {exc}")
                 print("     • invalid_grant → Refresh token expired or revoked")

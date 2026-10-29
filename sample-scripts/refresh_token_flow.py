@@ -58,9 +58,8 @@ Usage
 
 import os
 import sys
-import json
 import time
-from typing import Dict, Any
+from typing import Any
 
 from dotenv import load_dotenv
 
@@ -118,14 +117,14 @@ def validate_config() -> None:
         missing.append("IBM_USERNAME")
     if not PASSWORD:
         missing.append("IBM_PASSWORD")
-    
+
     if missing:
         print("❌  Missing required environment variables:")
         for var in missing:
             print(f"    • {var}")
         print("\nCreate a .env file (see sample-scripts/.env.example) and re-run.")
         sys.exit(1)
-    
+
     # Validate that TENANT_URL has a protocol
     if TENANT_URL and not TENANT_URL.startswith(("http://", "https://")):
         print("❌  IBM_VERIFY_TENANT_URL must start with https:// or http://")
@@ -134,21 +133,21 @@ def validate_config() -> None:
         sys.exit(1)
 
 
-def display_token_info(token: Dict[str, Any], label: str = "Token") -> None:
+def display_token_info(token: dict[str, Any], label: str = "Token") -> None:
     """Display token information in a formatted way."""
     print(f"\n  ✅ {label} received!")
     print(f"     token_type    : {token.get('token_type', 'N/A')}")
     print(f"     expires_in    : {token.get('expires_in', 'N/A')} seconds")
     print(f"     scope         : {token.get('scope', 'N/A')}")
-    
+
     access_token = str(token.get('access_token', ''))
     if access_token:
         print(f"     access_token  : {access_token[:60]}...")
-    
+
     if token.get("id_token"):
         id_token = str(token.get('id_token', ''))
         print(f"     id_token      : {id_token[:60]}...")
-    
+
     if token.get("refresh_token"):
         refresh_token = str(token.get('refresh_token', ''))
         print(f"     refresh_token : {refresh_token[:60]}...")
@@ -158,7 +157,7 @@ def introspect_and_display(
     client: OAuthClient,
     token: str,
     label: str = "Token"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Introspect a token and display its status."""
     try:
         result = client.introspect_token(
@@ -168,21 +167,21 @@ def introspect_and_display(
             client_secret=CLIENT_SECRET,
             token_type_hint="access_token",
         )
-        
+
         if result.get("active"):
             print(f"\n  ✅ {label} is ACTIVE")
             print(f"     Subject   : {result.get('sub', 'N/A')}")
             print(f"     Username  : {result.get('username', 'N/A')}")
             print(f"     Scope     : {result.get('scope', 'N/A')}")
             print(f"     Client ID : {result.get('client_id', 'N/A')}")
-            
+
             if result.get('exp'):
                 from datetime import datetime
                 exp = datetime.fromtimestamp(result['exp'])
                 print(f"     Expires   : {exp}")
         else:
             print(f"\n  ⚠️  {label} is NOT ACTIVE (expired or revoked)")
-        
+
         return result
     except Exception as exc:
         print(f"\n  ⚠️  Introspection failed: {exc}")
@@ -207,7 +206,7 @@ def main() -> None:
     print(f"  OP name : {OP_NAME}")
     try:
         metadata = client.load_discovery(op_name=OP_NAME)
-        print(f"  ✅ Discovery loaded")
+        print("  ✅ Discovery loaded")
         print(f"     Token endpoint : {metadata.get('token_endpoint')}")
     except Exception as exc:
         print(f"  ⚠️  Discovery failed ({exc}) — falling back to default paths")
@@ -216,7 +215,7 @@ def main() -> None:
     separator("STEP 1 — Obtain Initial Tokens (Password Grant)")
     print(f"  client_id : {CLIENT_ID}")
     print(f"  username  : {USERNAME}")
-    print(f"  Requesting tokens with refresh_token grant enabled...")
+    print("  Requesting tokens with refresh_token grant enabled...")
 
     try:
         initial_token = client.password_grant(
@@ -269,7 +268,7 @@ def main() -> None:
     print("\n  Options:")
     print("    1. Wait for token to expire naturally (not recommended)")
     print("    2. Continue immediately to test refresh flow")
-    
+
     choice = input("\n  Continue with refresh? [Y/n]: ").strip().lower()
     if choice == "n":
         print(f"\n  Waiting {expires_in} seconds for token to expire...")
@@ -307,20 +306,20 @@ def main() -> None:
 
     # ── Step 5 — Compare tokens ───────────────────────────────────────────────
     separator("STEP 5 — Compare Old vs New Tokens")
-    
+
     old_access = initial_token.get("access_token", "")
     new_access = refreshed_token.get("access_token", "")
-    
+
     if old_access == new_access:
         print("  ⚠️  Access tokens are IDENTICAL (unusual but possible)")
     else:
         print("  ✅ Access tokens are DIFFERENT (expected)")
         print(f"     Old: {old_access[:40]}...")
         print(f"     New: {new_access[:40]}...")
-    
+
     old_refresh = initial_token.get("refresh_token", "")
     new_refresh = refreshed_token.get("refresh_token", "")
-    
+
     if old_refresh == new_refresh:
         print("\n  ℹ️  Refresh tokens are IDENTICAL (token rotation not enabled)")
     else:
@@ -330,14 +329,14 @@ def main() -> None:
 
     # ── Step 6 — Introspect both tokens ───────────────────────────────────────
     separator("STEP 6 — Introspect Both Tokens")
-    
+
     print("\n  📋 Old access token:")
-    old_result = introspect_and_display(
+    introspect_and_display(
         client,
         old_access,
         "Old access token"
     )
-    
+
     print("\n  📋 New access token:")
     new_result = introspect_and_display(
         client,
@@ -348,7 +347,7 @@ def main() -> None:
     # ── Step 7 — Test refresh token reuse (optional) ──────────────────────────
     separator("STEP 7 — Test Refresh Token Reuse (Optional)")
     test_reuse = input("  Test using the same refresh token again? [y/N]: ").strip().lower()
-    
+
     if test_reuse == "y":
         print("\n  Attempting to reuse the original refresh token...")
         try:
@@ -363,7 +362,7 @@ def main() -> None:
             print("     This means token rotation is NOT enabled")
             display_token_info(reused_token, "Reused refresh token result")
         except Exception as exc:
-            print(f"\n  ✅ Refresh token reuse FAILED (expected with rotation)")
+            print("\n  ✅ Refresh token reuse FAILED (expected with rotation)")
             print(f"     Error: {exc}")
             print("     This means token rotation IS enabled (more secure)")
 
@@ -375,10 +374,10 @@ def main() -> None:
     print(f"     • Refreshed access token: {new_access[:40]}...")
     print(f"     • Tokens are different  : {'Yes ✅' if old_access != new_access else 'No ⚠️'}")
     print(f"     • Token rotation enabled: {'Yes ✅' if old_refresh != new_refresh else 'No ℹ️'}")
-    
+
     if new_result.get("active"):
-        print(f"\n  ✅ New access token is valid and ready to use!")
-    
+        print("\n  ✅ New access token is valid and ready to use!")
+
     separator()
     print()
 

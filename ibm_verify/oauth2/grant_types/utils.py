@@ -14,7 +14,7 @@ import hashlib
 import secrets
 import time
 import uuid
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from ibm_verify.oauth2.grant_types.constants import (
     JWT_BEARER_ASSERTION_EXPIRES_IN,
@@ -57,6 +57,7 @@ def build_authorization_url(
     nonce: Optional[str] = None,
     authorization_details: Optional[Any] = None,
     extra_params: Optional[dict[str, Any]] = None,
+    dpop_jkt: Optional[str] = None,
 ) -> str:
     """Build an Authorization Code + PKCE redirect URL (RFC 7636).
 
@@ -71,6 +72,8 @@ def build_authorization_url(
         authorization_details: Rich authorization request object (RAR, RFC 9396).
             Encoded as a JSON string in the query parameter.
         extra_params: Additional query parameters to include in the URL.
+        dpop_jkt: DPoP key thumbprint (RFC 9449 §10) binding the authorization code
+            to the client's DPoP key.
 
     Returns:
         Authorization URL to redirect the user's browser to.
@@ -92,6 +95,8 @@ def build_authorization_url(
     }
     if nonce:
         params["nonce"] = nonce
+    if dpop_jkt:
+        params["dpop_jkt"] = dpop_jkt
     if authorization_details is not None:
         params["authorization_details"] = (
             json.dumps(authorization_details)
@@ -111,6 +116,7 @@ def generate_client_assertion_jwt(
     algorithm: str = JWT_DEFAULT_ALGORITHM,
     expires_in: int = JWT_CLIENT_ASSERTION_EXPIRES_IN,
     key_id: Optional[str] = None,
+    audience: Optional[Union[str, list[str]]] = None,
 ) -> str:
     """Generate a signed JWT for ``private_key_jwt`` client authentication (RFC 7523).
 
@@ -124,6 +130,9 @@ def generate_client_assertion_jwt(
         algorithm: JWT signing algorithm (default: ``"RS256"``).
         expires_in: JWT lifetime in seconds (default: 300).
         key_id: Optional ``kid`` header to identify the registered key.
+        audience: Explicit ``aud`` override — a string or a list. Defaults to
+            ``token_endpoint``. IBM's Go SDK sends
+            ``["https://<tenant>/oauth2", "https://<tenant>/oauth2/token"]``.
 
     Returns:
         Signed JWT string for use as ``client_assertion``.
@@ -134,15 +143,15 @@ def generate_client_assertion_jwt(
     from authlib.jose import jwt as authlib_jwt
 
     now = int(time.time())
-    claims = {
+    claims: dict[str, Any] = {
         "iss": client_id,
         "sub": client_id,
-        "aud": token_endpoint,
+        "aud": audience or token_endpoint,
         "jti": str(uuid.uuid4()),
         "exp": now + expires_in,
         "iat": now,
     }
-    header: dict[str, Any] = {"alg": algorithm}
+    header: dict[str, Any] = {"alg": algorithm, "typ": "JWT"}
     if key_id:
         header["kid"] = key_id
 

@@ -50,9 +50,9 @@ Usage
     python sample-scripts/client_credentials_flow.py
 """
 
+import json
 import os
 import sys
-import json
 
 from dotenv import load_dotenv
 
@@ -139,7 +139,7 @@ def main() -> None:
     print(f"  OP name : {OP_NAME}")
     try:
         metadata = client.load_discovery(op_name=OP_NAME)
-        print(f"  ✅ Discovery loaded")
+        print("  ✅ Discovery loaded")
         print(f"     Token endpoint : {metadata.get('token_endpoint')}")
     except Exception as exc:
         print(f"  ⚠️  Discovery failed ({exc}) — using default paths")
@@ -173,7 +173,7 @@ def main() -> None:
         print(f"\n  ❌ Unexpected error: {exc}")
         sys.exit(1)
 
-    print(f"\n  ✅ Token obtained!")
+    print("\n  ✅ Token obtained!")
     print(f"     token_type   : {token.get('token_type')}")
     print(f"     expires_in   : {token.get('expires_in')} s")
     print(f"     scope        : {token.get('scope')}")
@@ -196,7 +196,7 @@ def main() -> None:
             print("\n  Introspection response:")
             print(json.dumps(introspection, indent=4))
             if introspection.get("active"):
-                print(f"\n  ✅ Token is ACTIVE")
+                print("\n  ✅ Token is ACTIVE")
                 print(f"     client_id : {introspection.get('client_id', 'n/a')}")
                 print(f"     scope     : {introspection.get('scope', 'n/a')}")
             else:

@@ -38,7 +38,7 @@ class DiscoveryMixin:
         if discovery_url:
             url = discovery_url
         else:
-            issuer = f"{self.base_url}/oauth2"
+            issuer = f"{self.base_url}/oauth2"  # type: ignore[attr-defined]
             url = get_well_known_url(issuer, external=True)
 
         try:
@@ -52,8 +52,8 @@ class DiscoveryMixin:
         except httpx.RequestError as exc:
             raise VerifyError(message=f"Discovery request failed: {exc}") from exc
 
-        self._provider_metadata = OpenIDProviderMetadata(response.json())  # type: ignore[attr-defined]
-        return self._provider_metadata  # type: ignore[return-value]
+        self._provider_metadata = OpenIDProviderMetadata(response.json())
+        return self._provider_metadata
 
     def get_discovery(
         self,
@@ -69,9 +69,9 @@ class DiscoveryMixin:
         Returns:
             Cached ``OpenIDProviderMetadata`` instance.
         """
-        if self._provider_metadata is None:  # type: ignore[attr-defined]
+        if self._provider_metadata is None:
             self.load_discovery(op_name=op_name, discovery_url=discovery_url)
-        return self._provider_metadata  # type: ignore[return-value]
+        return self._provider_metadata
 
     def get_jwks(
         self,
@@ -105,4 +105,4 @@ class DiscoveryMixin:
             ) from exc
         except httpx.RequestError as exc:
             raise VerifyError(message=f"JWKS request failed: {exc}") from exc
-        return response.json()
+        return dict(response.json())

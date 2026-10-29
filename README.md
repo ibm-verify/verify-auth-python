@@ -28,6 +28,7 @@ IBM Verify solves hybrid challenges with secure, frictionless IAM that simplifie
   - [jwt\_bearer\_grant()](#jwt_bearer_grant)
   - [refresh\_access\_token()](#refresh_access_token)
   - [introspect\_token()](#introspect_token)
+  - [DPoP (RFC 9449)](#dpop-rfc-9449)
   - [Dynamic Client Registration (DCR)](#dynamic-client-registration-dcr)
   - [Utility functions](#utility-functions)
 - [Exception Handling](#exception-handling)
@@ -181,14 +182,67 @@ The same parameter is accepted by every grant method that supports RAR: `passwor
 ```python
 token = client.client_credentials(
     client_id="YOUR_CLIENT_ID",              # required
-    client_secret="YOUR_CLIENT_SECRET",      # required
-    scope="openid",                          # required — space-separated scopes
-    authorization_header="Basic ...",        # required — pre-encoded Authorization header value
+    client_secret="YOUR_CLIENT_SECRET",      # optional — omit when using private_key_jwt
+    scope="openid",                          # optional — space-separated scopes
+    authorization_header=None,               # optional — pre-encoded header, used only when no secret or assertion is given
     token_endpoint=None,                     # optional endpoint override
     authorization_details=None,              # optional — list/dict, JSON-encoded automatically (RFC 9396)
     extra_params=None,                       # optional — dict merged into the token request body
+    client_assertion=None,                   # optional — JWT string or callable for private_key_jwt auth
+    client_assertion_type=None,              # optional — defaults to the jwt-bearer URN
+    client_secret_post=False,                # optional — send client_secret in the body instead of Basic header
+    dpop_private_key=None,                   # optional — PEM key to request a DPoP-bound token (RFC 9449)
 )
 # Returns: dict — access_token, token_type, expires_in, scope, …
+```
+
+The SDK selects the authentication method for you based on what you provide: a `client_assertion` (key-based, no secret) takes priority, then `client_secret`, then a pre-built `authorization_header`. You must supply at least one.
+
+---
+
+#### Authenticating without a client secret — private_key_jwt
+
+By default, your application proves its identity with a `client_secret` — a shared password that lives in configuration files and CI pipelines. **private_key_jwt** replaces that password with a short-lived, digitally signed token. Your application keeps a private key; IBM Verify stores only the matching public key. Nothing sensitive ever travels over the network.
+
+**One-time IBM Verify setup**
+
+Go to your application → **Sign-on** tab → set **Client authentication method** to *Private key JWT* → upload your certificate or provide a JWKS URI.
+
+**Using private_key_jwt in code**
+
+```python
+# Step 1 — build a signed, single-use token that proves who your app is.
+# Generate a fresh one for every request — each is only valid for 5 minutes.
+assertion = OAuthClient.generate_client_assertion_jwt(
+    client_id="YOUR_CLIENT_ID",
+    token_endpoint=client.get_discovery()["token_endpoint"],
+    private_key=open("client-private.pem").read(),
+    key_id="my-key",          # label of the key you registered on IBM Verify
+)
+
+# Step 2 — use the assertion instead of client_secret.
+token = client.client_credentials(
+    client_id="YOUR_CLIENT_ID",
+    scope="openid",
+    client_assertion=assertion,   # no client_secret needed
+)
+```
+
+The same `client_assertion=` parameter works on `exchange_code_for_token()`, `refresh_access_token()`, `jwt_bearer_grant()`, and `introspect_token()` — no client secret anywhere in the chain.
+
+**Using private_key_jwt together with DPoP**
+
+When DPoP is also enabled on the application, pass a function instead of a fixed string. The SDK may need to retry the request with a server-issued nonce (a one-time value returned by the server to prevent replay attacks), and a function lets it generate a brand-new assertion for that retry:
+
+```python
+token = client.client_credentials(
+    client_id="YOUR_CLIENT_ID",
+    scope="openid",
+    client_assertion=lambda: OAuthClient.generate_client_assertion_jwt(
+        "YOUR_CLIENT_ID", token_endpoint, private_key, key_id="my-key"
+    ),
+    dpop_private_key=dpop_key,
+)
 ```
 
 ---
@@ -201,7 +255,7 @@ token = client.password_grant(
     client_secret="YOUR_CLIENT_SECRET",      # required
     username="user@example.com",             # required
     password="...",                          # required
-    authorization_header="Basic ...",        # required — pre-encoded Authorization header value
+    authorization_header="",                 # pre-encoded header; used only if client_secret is empty
     scope=None,                              # optional — space-separated scopes
     token_endpoint=None,                     # optional endpoint override
     authorization_details=None,              # optional (RFC 9396)
@@ -230,6 +284,7 @@ auth_url = client.build_authorization_url(
     authorize_endpoint=None,                 # optional endpoint override
     authorization_details=None,              # optional (RFC 9396)
     extra_params=None,                       # optional
+    dpop_jkt=None,                           # optional — DPoP key thumbprint; binds the code to the key (RFC 9449 §10)
 )
 # Returns: str — authorization URL to redirect the user's browser to
 ```
@@ -350,7 +405,10 @@ token = client.jwt_bearer_grant(
 token = client.refresh_access_token(
     client_id="YOUR_CLIENT_ID",              # required
     refresh_token="REFRESH_TOKEN",           # required
-    client_secret=None,                      # optional — client_secret_post auth
+    client_secret=None,                      # optional — HTTP Basic by default
+    client_secret_post=False,                # optional — send the secret in the body instead
+                                             #   (IBM Verify apps limited to client_secret_post
+                                             #    reject Basic with CSIAQ0330E, e.g. device clients)
     client_assertion=None,                   # optional — JWT for private_key_jwt auth
     client_assertion_type=None,              # optional — URN; required when client_assertion is set
     scope=None,                              # optional — must be a subset of the original grant
@@ -371,14 +429,98 @@ result = client.introspect_token(
     op_name="default",                       # optional OIDC provider name (default: "default")
     client_id=None,                          # optional
     client_secret=None,                      # optional
-    client_assertion=None,                   # optional — JWT for private_key_jwt auth
-    client_assertion_type=None,              # optional
+    client_assertion=None,                   # optional — JWT for private_key_jwt auth (sent with client_id)
+    client_assertion_type=None,              # optional — defaults to the jwt-bearer URN
     token_type_hint=None,                    # optional — "access_token" or "refresh_token"
     authorization_header=None,               # optional — alternative to client_id/secret
     introspect_endpoint=None,                # optional endpoint override
 )
 # Returns: dict — active (bool), scope, client_id, username, exp, sub, iss, …
 ```
+
+---
+
+### DPoP (RFC 9449)
+
+DPoP (Demonstrating Proof of Possession) binds an access token to a key pair that only the requesting client holds. A stolen token is useless without the matching private key.
+
+DPoP is not a separate grant type — add `dpop_private_key` to any existing token call: `client_credentials()`, `exchange_code_for_token()`, `refresh_access_token()`, `password_grant()`, `token_exchange()`, `jwt_bearer_grant()`, `poll_device_token()` / `device_authorization_flow()`.
+
+**IBM Verify setup:** Applications → your application → Sign-on → expand **Proof-of-Possession settings** → enable **Enforce DPoP-bound access token**. Note the **Signing algorithm for DPoP JWT** (default `RS256`) — your key type must match.
+
+**Step 1 — Generate a key pair**
+
+```python
+# Keep this private key for the lifetime of the token. RSA (RS256) matches IBM Verify's default.
+private_key = OAuthClient.generate_dpop_key_pair("RSA")   # or "EC" for ES256
+```
+
+**Step 2 — Request a DPoP-bound token**
+
+```python
+token = client.client_credentials(
+    client_id="YOUR_CLIENT_ID",
+    client_secret="YOUR_CLIENT_SECRET",
+    scope="openid",
+    dpop_private_key=private_key,            # SDK attaches the DPoP proof header automatically
+    dpop_algorithm=None,                     # optional — inferred from the key type if omitted
+)
+# token["token_type"] == "DPoP"
+# token["access_token"] carries cnf.jkt — the thumbprint of your public key
+```
+
+**Step 3 — Call a DPoP-protected resource**
+
+```python
+# dpop_request() builds Authorization: DPoP + a fresh proof, and retries automatically
+# if the resource server returns a use_dpop_nonce challenge.
+response = client.dpop_request(
+    "GET", "https://api.example.com/resource",
+    access_token=token["access_token"],
+    private_key=private_key,
+)
+
+# Or build the headers yourself (e.g. for use with another HTTP client):
+headers = client.build_dpop_headers(
+    access_token=token["access_token"],
+    private_key=private_key,
+    http_method="GET",
+    http_url="https://api.example.com/resource",
+)
+# {"Authorization": "DPoP <token>", "DPoP": "<proof>"}
+```
+
+**Step 4 — Validate the proof on the resource server**
+
+```python
+from ibm_verify.oauth2.grant_types.dpop import InMemoryDPoPReplayCache
+
+# Create replay_cache once per process. For multi-instance deployments use a shared
+# store (for example, Redis SET jti 1 NX EX <ttl>) implementing the same check_and_store() interface.
+replay_cache = InMemoryDPoPReplayCache()
+
+result = client.introspect_dpop_token(
+    token=token["access_token"],
+    dpop_proof=headers["DPoP"],
+    http_method="GET",
+    http_url="https://api.example.com/resource",
+    replay_cache=replay_cache,               # rejects replayed proofs (RFC 9449 §11.1)
+    client_id="YOUR_CLIENT_ID",
+    client_secret="YOUR_CLIENT_SECRET",
+)
+# Raises VerifyError if the proof signature, ath, htm/htu, iat window,
+# cnf.jkt binding, or jti replay check fails.
+```
+
+**Nonce handling (automatic)**
+
+If IBM Verify or the resource server requires a server-issued nonce (`400 use_dpop_nonce` or `401 WWW-Authenticate: DPoP error="use_dpop_nonce"`), the SDK retries the request once with the supplied nonce — no code changes needed. The nonce is cached per server origin for subsequent calls. If the retry also fails, `VerifyError.dpop_nonce` holds the latest server nonce for debugging.
+
+**Other helpers**
+
+`client.compute_dpop_jkt(private_key)` — returns the key thumbprint (`cnf.jkt`).
+`client.generate_dpop_proof(...)` — builds a proof manually for custom flows.
+`ibm_verify.oauth2.grant_types.dpop` — exports `verify_dpop_proof()`, `compute_ath()`, and `InMemoryDPoPReplayCache` for use in resource server code.
 
 ---
 
@@ -567,6 +709,7 @@ client_assertion = OAuthClient.generate_client_assertion_jwt(
     algorithm="RS256",                       # optional (default: "RS256")
     expires_in=300,                          # optional — JWT lifetime in seconds (default: 300)
     key_id=None,                             # optional — kid header
+    audience=None,                           # optional — str or list; defaults to token_endpoint
 )
 # Returns: str — signed JWT for use as client_assertion
 # Raises: ValueError — invalid key or unsupported algorithm
@@ -602,9 +745,10 @@ from ibm_verify.oauth2.core.errors.errors import VerifyError
 try:
     token = client.client_credentials(...)
 except VerifyError as e:
-    print(e.status_code)        # int — HTTP status code (0 if not applicable)
-    print(e.error)              # str — OAuth error code, e.g. "invalid_client"
-    print(e.error_description)  # str — OAuth error_description
+    print(e.status_code)        # int | None — HTTP status code, when there was a response
+    print(e.error)              # str | None — OAuth error code, e.g. "invalid_client"
+    print(e.error_description)  # str | None — OAuth error_description
+    print(e.dpop_nonce)         # str | None — DPoP-Nonce sent by the server, if any
     print(e.message)            # str — human-readable message
 ```
 
@@ -627,6 +771,8 @@ except VerifyError as e:
 | `ibm_verify.oauth2.grant_types.constants` | Grant-type URNs and default endpoint paths |
 | `ibm_verify.oauth2.grant_types.flows.discovery` | `DiscoveryMixin` — `load_discovery()`, `get_discovery()`, `get_jwks()` |
 | `ibm_verify.oauth2.grant_types.flows.introspection` | `IntrospectMixin` — `introspect_token()` |
+| `ibm_verify.oauth2.grant_types.flows.dpop` | `DPoPMixin` — `generate_dpop_key_pair()`, `generate_dpop_proof()`, `build_dpop_headers()`, `introspect_dpop_token()` |
+| `ibm_verify.oauth2.grant_types.dpop` | Standalone DPoP helpers — `generate_dpop_proof()`, `verify_dpop_proof()`, `compute_jkt()`, `compute_ath()` |
 | `ibm_verify.oauth2.grant_types.flows.registration` | `DcrMixin` — `register_client()`, `read_client()`, `update_client()`, `delete_client()` |
 | `ibm_verify.oauth2.grant_types.utils` | `generate_pkce_pair()`, `generate_client_assertion_jwt()`, `generate_jwt_bearer_assertion()`, `build_authorization_url()` |
 | `ibm_verify.oauth2.grant_types.grants.client_credentials` | `ClientCredentialsMixin` |
@@ -654,9 +800,11 @@ verify-auth-python/
 │       │   ├── base.py                # OAuthBase
 │       │   ├── constants.py
 │       │   ├── utils.py               # PKCE + JWT helpers
+│       │   ├── dpop.py                # DPoP proof / thumbprint / verification helpers
 │       │   ├── flows/                 # Protocol flows
 │       │   │   ├── registration.py    # DcrMixin — Dynamic Client Registration
 │       │   │   ├── discovery.py       # DiscoveryMixin
+│       │   │   ├── dpop.py            # DPoPMixin
 │       │   │   └── introspection.py   # IntrospectMixin
 │       │   └── grants/                # Grant-type mixins
 │       │       ├── authorization_code.py
@@ -689,7 +837,7 @@ python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\act
 pip install -e ".[dev,samples]"
 ```
 
-Dev extras: `pytest`, `pytest-cov`, `pytest-asyncio`, `respx`, `ruff`, `mypy`, `pre-commit`.
+Dev extras: `pytest`, `pytest-cov`, `pytest-asyncio`, `respx`, `black`, `ruff`, `mypy`.
 
 Sample scripts depend on `python-dotenv`. Install sample dependencies with `pip install -e ".[samples]"` or include them during setup with `pip install -e ".[dev,samples]"`.
 

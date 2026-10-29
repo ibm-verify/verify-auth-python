@@ -22,9 +22,10 @@ Usage
     python sample-scripts/introspect_token.py
 """
 
+import json
 import os
 import sys
-import json
+
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
@@ -113,7 +114,7 @@ def main() -> None:
 
         sep()
         if result.get("active"):
-            print(f"  Token is ACTIVE")
+            print("  Token is ACTIVE")
             print(f"  Subject  : {result.get('sub', 'n/a')}")
             print(f"  Username : {result.get('username', 'n/a')}")
             print(f"  Scope    : {result.get('scope', 'n/a')}")

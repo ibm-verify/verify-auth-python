@@ -40,3 +40,11 @@ PKCE_VERIFIER_BYTE_LENGTH = 96  # 96 bytes → 128-char URL-safe base64 string
 JWT_DEFAULT_ALGORITHM = "RS256"
 JWT_CLIENT_ASSERTION_EXPIRES_IN = 300  # 5 minutes
 JWT_BEARER_ASSERTION_EXPIRES_IN = 300  # 5 minutes
+
+# ── DPoP — Demonstrating Proof of Possession (RFC 9449) ───────────────────────
+DPOP_HEADER = "DPoP"
+DPOP_JWT_TYPE = "dpop+jwt"
+TOKEN_TYPE_DPOP = "DPoP"
+DPOP_DEFAULT_KEY_TYPE = "RSA"  # IBM Verify default "Signing algorithm for DPoP JWT" is RS256
+DPOP_PROOF_MAX_AGE = 300  # seconds an ``iat`` may be in the past when verifying a proof
+DPOP_PROOF_LEEWAY = 60  # seconds an ``iat`` may be in the future (clock skew)
