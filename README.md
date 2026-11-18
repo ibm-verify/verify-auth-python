@@ -1,4 +1,4 @@
-# IBM Verify Python SDK
+# IBM Verify Auth SDK for Python
 
 [![PyPI version](https://img.shields.io/pypi/v/verify-auth-python.svg)](https://pypi.org/project/verify-auth-python/)
 [![CI](https://github.com/ibm-verify/verify-auth-python/actions/workflows/ci.yml/badge.svg)](https://github.com/ibm-verify/verify-auth-python/actions/workflows/ci.yml)
