@@ -24,6 +24,7 @@ ENV/
 # Testing, Coverage, and Type Checkers
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
 .tox/
 .mypy_cache/
@@ -49,7 +50,6 @@ jspm_packages/
 # System files
 .DS_Store
 Thumbs.db
-*.ini
 
 # Editors and IDEs
 .vscode/
