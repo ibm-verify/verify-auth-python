@@ -1,9 +1,9 @@
-# IBM Verify Python SDK
+# IBM Verify Auth SDK for Python
 
-[![PyPI version](https://img.shields.io/badge/pypi-v0.1.0-blue.svg)](https://pypi.org/project/verify-auth-python/)
-[![Build Status](https://img.shields.io/badge/build-lint%20warnings-yellow.svg)](#)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://pypi.org/project/verify-auth-python/)
+[![PyPI version](https://img.shields.io/pypi/v/verify-auth-python.svg)](https://pypi.org/project/verify-auth-python/)
+[![CI](https://github.com/ibm-verify/verify-auth-python/actions/workflows/ci.yml/badge.svg)](https://github.com/ibm-verify/verify-auth-python/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/ibm-verify/verify-auth-python/blob/main/LICENSE)
+[![Python](https://img.shields.io/pypi/pyversions/verify-auth-python.svg)](https://pypi.org/project/verify-auth-python/)
 
 A Python SDK for IBM Verify SaaS, focused on OAuth 2.0 and OIDC - token acquisition, discovery, introspection, and dynamic client registration.
 
@@ -44,7 +44,7 @@ IBM Verify solves hybrid challenges with secure, frictionless IAM that simplifie
 
 ## Requirements
 
-- Python 3.9+
+- Python 3.10+
 - An IBM Verify tenant
 
 ---
@@ -54,6 +54,8 @@ IBM Verify solves hybrid challenges with secure, frictionless IAM that simplifie
 ```bash
 pip install verify-auth-python
 ```
+
+Releases of the SDK are available here: [Releases](https://github.com/ibm-verify/verify-auth-python/releases)
 
 ```bash
 uv add verify-auth-python
@@ -862,23 +864,23 @@ You can contribute or open an issue to discuss significant changes before submit
 
 - **`auth/` and `grant_types/`** — custom-built; direct PRs welcome.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, coding conventions, commit format, and PR checklist.
+See [CONTRIBUTING.md](https://github.com/ibm-verify/verify-auth-python/blob/main/CONTRIBUTING.md) for setup, coding conventions, commit format, and PR checklist.
 
 ---
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for a full list of changes and known limitations.
+See [CHANGELOG.md](https://github.com/ibm-verify/verify-auth-python/blob/main/CHANGELOG.md) for a full list of changes.
 
 ---
 
 ## Support
 
-- **Issues:** GitHub Issues - link to be added after the repository is public
+- **Issues:** [GitHub Issues](https://github.com/ibm-verify/verify-auth-python/issues)
 - **IBM Verify docs:** [docs.verify.ibm.com](https://docs.verify.ibm.com/)
 
 ---
 
 ## License
 
-[Apache License 2.0](LICENSE)
+[Apache License 2.0](https://github.com/ibm-verify/verify-auth-python/blob/main/LICENSE)

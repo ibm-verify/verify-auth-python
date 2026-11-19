@@ -20,14 +20,17 @@ jobs:
     name: Publish to PyPI
     runs-on: ubuntu-latest
     needs: ci
+    permissions:
+      contents: write   # create the GitHub Release
+      id-token: write   # PyPI trusted publishing (OIDC)
     environment:
       name: pypi
       url: https://pypi.org/project/verify-auth-python/
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -57,6 +60,18 @@ jobs:
         # Uses OIDC trusted publishing — no API token needed.
         # Configure the trusted publisher once in PyPI project settings:
         #   Publisher : GitHub Actions
-        #   Owner     : <your-org>
+        #   Owner     : ibm-verify
         #   Repository: verify-auth-python
         #   Workflow  : publish.yml
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Release notes = this version's section of CHANGELOG.md (from "# vX.Y.Z" to the next "# v").
+          awk -v tag="# ${GITHUB_REF_NAME}" '$0==tag{f=1;next} f&&/^# v/{exit} f' CHANGELOG.md \
+            | sed '/^<br\/>$/d' > release-notes.md
+          gh release create "${GITHUB_REF_NAME}" dist/* \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file release-notes.md \
+            --verify-tag
